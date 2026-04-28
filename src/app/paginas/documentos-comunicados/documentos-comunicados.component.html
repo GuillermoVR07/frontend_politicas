@@ -3,43 +3,76 @@
 <div class="tarjeta">
   <h2>Registrar documento o comunicado</h2>
 
+  <p>
+    Aquí se registra información asociada a un trámite. No se suben archivos desde
+    la app móvil y no se descargan documentos desde Flutter.
+  </p>
+
   <label>Identificador del trámite</label>
-  <input [(ngModel)]="documentoNuevo.tramiteId" placeholder="Escribe el identificador del trámite...">
+  <input
+    [(ngModel)]="documentoNuevo.tramiteId"
+    placeholder="Pegue aquí el ID del trámite">
 
   <label>Tipo</label>
-  <select title="Seleccione un tipo" [(ngModel)]="documentoNuevo.tipo">
-    <option *ngFor="let tipo of tipos" [value]="tipo">{{ tipo }}</option>
+  <select title="Seleccione el tipo de documento o comunicado" [(ngModel)]="documentoNuevo.tipo">
+    <option *ngFor="let tipo of tipos" [value]="tipo">
+      {{ tipo }}
+    </option>
   </select>
 
   <label>Nombre</label>
-  <input [(ngModel)]="documentoNuevo.nombre" placeholder="Escribe el nombre del documento...">
+  <input
+    [(ngModel)]="documentoNuevo.nombre"
+    placeholder="Ejemplo: Comunicado de revisión">
 
   <label>Descripción</label>
-  <textarea [(ngModel)]="documentoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+  <textarea
+    [(ngModel)]="documentoNuevo.descripcion"
+    placeholder="Detalle visible o interno sobre el trámite">
+  </textarea>
 
   <label>Identificador del departamento</label>
-  <input [(ngModel)]="documentoNuevo.departamentoId" placeholder="Escribe el identificador del departamento...">
+  <input
+    [(ngModel)]="documentoNuevo.departamentoId"
+    placeholder="Ejemplo: DEP_LEGAL">
 
   <label>Nombre del departamento</label>
-  <input [(ngModel)]="documentoNuevo.nombreDepartamento" placeholder="Escribe el nombre del departamento...">
+  <input
+    [(ngModel)]="documentoNuevo.nombreDepartamento"
+    placeholder="Ejemplo: Legal">
 
-  <label>
+  <label class="opcion-visible">
     <input type="checkbox" [(ngModel)]="documentoNuevo.visibleParaCliente">
     Visible para cliente
   </label>
 
-  <button (click)="crearDocumentoComunicado()">Guardar</button>
+  <div class="acciones">
+    <button (click)="crearDocumentoComunicado()">Guardar</button>
+    <button (click)="usarTramiteDelFormulario()">Ver elementos del trámite</button>
+    <button (click)="limpiarFormulario()">Limpiar</button>
+  </div>
 
-  <p>{{ mensaje }}</p>
+  <p class="mensaje">{{ mensaje }}</p>
 </div>
 
 <div class="tarjeta">
-  <h2>Buscar documentos por trámite</h2>
+  <h2>Consultar documentos y comunicados por trámite</h2>
 
   <label>Identificador del trámite</label>
-  <input [(ngModel)]="tramiteIdConsulta" placeholder="Escribe el identificador del trámite...">
+  <input
+    [(ngModel)]="tramiteIdConsulta"
+    placeholder="Pegue aquí el ID del trámite">
+
+  <label class="opcion-visible">
+    <input type="checkbox" [(ngModel)]="soloVisiblesParaCliente">
+    Mostrar solo visibles para cliente
+  </label>
 
   <button (click)="buscarPorTramite()">Buscar</button>
+</div>
+
+<div class="tarjeta" *ngIf="documentosComunicados.length === 0">
+  <p>No hay documentos o comunicados cargados para mostrar.</p>
 </div>
 
 <table class="tabla-simple" *ngIf="documentosComunicados.length > 0">
@@ -50,8 +83,10 @@
       <th>Descripción</th>
       <th>Departamento</th>
       <th>Visible para cliente</th>
+      <th>Fecha</th>
     </tr>
   </thead>
+
   <tbody>
     <tr *ngFor="let item of documentosComunicados">
       <td>{{ item.tipo }}</td>
@@ -59,6 +94,7 @@
       <td>{{ item.descripcion }}</td>
       <td>{{ item.nombreDepartamento }}</td>
       <td>{{ item.visibleParaCliente ? 'Sí' : 'No' }}</td>
+      <td>{{ item.fechaRegistro }}</td>
     </tr>
   </tbody>
 </table>

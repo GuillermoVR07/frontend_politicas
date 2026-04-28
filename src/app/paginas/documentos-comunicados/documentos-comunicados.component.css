@@ -1,3 +1,22 @@
-p {
+.mensaje {
   color: #1f5f99;
+}
+
+.acciones {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.opcion-visible {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.opcion-visible input {
+  width: auto;
+  margin: 0;
 }
