@@ -1,0 +1,32 @@
+<h1>Departamentos</h1>
+
+<div class="tarjeta">
+  <h2>Crear departamento</h2>
+
+  <label>Nombre</label>
+  <input [(ngModel)]="departamentoNuevo.nombre" placeholder="Escribe el nombre del departamento...">
+
+  <label>Descripción</label>
+  <textarea [(ngModel)]="departamentoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+
+  <button (click)="crearDepartamento()">Crear departamento</button>
+
+  <p>{{ mensaje }}</p>
+</div>
+
+<table class="tabla-simple" *ngIf="departamentos.length > 0">
+  <thead>
+    <tr>
+      <th>Identificador</th>
+      <th>Nombre</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let departamento of departamentos">
+      <td>{{ departamento.id }}</td>
+      <td>{{ departamento.nombre }}</td>
+      <td>{{ departamento.descripcion }}</td>
+    </tr>
+  </tbody>
+</table>

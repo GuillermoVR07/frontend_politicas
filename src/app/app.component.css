@@ -1,0 +1,8 @@
+.contenedor-principal {
+  min-height: 100vh;
+  background: #f4f6f8;
+}
+
+.contenido-principal {
+  padding: 20px;
+}

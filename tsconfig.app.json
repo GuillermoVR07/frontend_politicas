@@ -3,7 +3,12 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "./out-tsc/app",
+    "module": "ESNext",
+    "rootDir": "./src",
     "types": [
       "node"
     ]

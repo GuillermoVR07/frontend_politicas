@@ -1,0 +1,85 @@
+<h1>Trámites</h1>
+
+<div class="tarjeta">
+  <h2>Crear trámite</h2>
+
+  <label>Código</label>
+  <input [(ngModel)]="tramiteNuevo.codigo" placeholder="Escribe el código del trámite...">
+
+  <label>Título</label>
+  <input [(ngModel)]="tramiteNuevo.titulo" placeholder="Escribe el título del trámite...">
+
+  <label>Descripción</label>
+  <textarea [(ngModel)]="tramiteNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+
+  <label>Identificación de ciudadano</label>
+  <input [(ngModel)]="tramiteNuevo.identificacionCiudadano" placeholder="Escribe la identificación del ciudadano...">
+
+  <label>Identificador del proceso</label>
+  <input [(ngModel)]="tramiteNuevo.procesoId" placeholder="Escribe el identificador del proceso...">
+
+  <label>Identificador del departamento inicial</label>
+  <input [(ngModel)]="tramiteNuevo.departamentoInicialId" placeholder="Escribe el identificador del departamento inicial...">
+
+  <label>Nombre del departamento inicial</label>
+  <input [(ngModel)]="tramiteNuevo.nombreDepartamentoInicial" placeholder="Escribe el nombre del departamento inicial...">
+
+  <button (click)="crearTramite()">Crear trámite</button>
+</div>
+
+<div class="tarjeta">
+  <h2>Cambiar estado o departamento</h2>
+
+  <label>Identificador del trámite</label>
+  <input [(ngModel)]="tramiteSeleccionadoId" placeholder="Escribe el identificador del trámite...">
+
+  <label>Nuevo estado</label>
+  <select title="Selecciones un Nuevo estado" [(ngModel)]="nuevoEstado">
+    <option *ngFor="let estado of estados" [value]="estado">{{ estado }}</option>
+  </select>
+
+  <label>Observación</label>
+  <textarea [(ngModel)]="observacion" placeholder="Escribe una observación..."></textarea>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="visibleParaCliente">
+    Visible para cliente
+  </label>
+
+  <button (click)="cambiarEstado()">Cambiar estado</button>
+
+  <hr>
+
+  <label>Nuevo identificador de departamento</label>
+  <input [(ngModel)]="nuevoDepartamentoId" placeholder="Escribe el identificador del nuevo departamento...">
+
+  <label>Nombre del nuevo departamento</label>
+  <input [(ngModel)]="nombreNuevoDepartamento" placeholder="Escribe el nombre del nuevo departamento...">
+
+  <button (click)="cambiarDepartamento()">Cambiar departamento</button>
+
+  <p>{{ mensaje }}</p>
+</div>
+
+<table class="tabla-simple" *ngIf="tramites.length > 0">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Código</th>
+      <th>Título</th>
+      <th>Ciudadano</th>
+      <th>Estado</th>
+      <th>Departamento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let tramite of tramites">
+      <td>{{ tramite.id }}</td>
+      <td>{{ tramite.codigo }}</td>
+      <td>{{ tramite.titulo }}</td>
+      <td>{{ tramite.identificacionCiudadano }}</td>
+      <td>{{ tramite.estadoActual }}</td>
+      <td>{{ tramite.nombreDepartamentoActual }}</td>
+    </tr>
+  </tbody>
+</table>

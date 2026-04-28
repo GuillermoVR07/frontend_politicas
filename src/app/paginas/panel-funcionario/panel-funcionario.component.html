@@ -1,0 +1,29 @@
+<h1>Panel del funcionario</h1>
+
+<div class="tarjeta">
+  <label>Identificador del departamento</label>
+  <input [(ngModel)]="departamentoId" placeholder="Ejemplo: DEP_ATENCION">
+
+  <button (click)="buscarTramitesPorDepartamento()">Buscar trámites</button>
+
+  <p *ngIf="mensaje">{{ mensaje }}</p>
+</div>
+
+<table class="tabla-simple" *ngIf="tramites.length > 0">
+  <thead>
+    <tr>
+      <th>Código</th>
+      <th>Título</th>
+      <th>Estado</th>
+      <th>Departamento actual</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let tramite of tramites">
+      <td>{{ tramite.codigo }}</td>
+      <td>{{ tramite.titulo }}</td>
+      <td>{{ tramite.estadoActual }}</td>
+      <td>{{ tramite.nombreDepartamentoActual }}</td>
+    </tr>
+  </tbody>
+</table>

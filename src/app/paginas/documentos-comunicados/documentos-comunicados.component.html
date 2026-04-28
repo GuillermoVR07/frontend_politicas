@@ -1,0 +1,64 @@
+<h1>Documentos y comunicados</h1>
+
+<div class="tarjeta">
+  <h2>Registrar documento o comunicado</h2>
+
+  <label>Identificador del trámite</label>
+  <input [(ngModel)]="documentoNuevo.tramiteId" placeholder="Escribe el identificador del trámite...">
+
+  <label>Tipo</label>
+  <select title="Seleccione un tipo" [(ngModel)]="documentoNuevo.tipo">
+    <option *ngFor="let tipo of tipos" [value]="tipo">{{ tipo }}</option>
+  </select>
+
+  <label>Nombre</label>
+  <input [(ngModel)]="documentoNuevo.nombre" placeholder="Escribe el nombre del documento...">
+
+  <label>Descripción</label>
+  <textarea [(ngModel)]="documentoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+
+  <label>Identificador del departamento</label>
+  <input [(ngModel)]="documentoNuevo.departamentoId" placeholder="Escribe el identificador del departamento...">
+
+  <label>Nombre del departamento</label>
+  <input [(ngModel)]="documentoNuevo.nombreDepartamento" placeholder="Escribe el nombre del departamento...">
+
+  <label>
+    <input type="checkbox" [(ngModel)]="documentoNuevo.visibleParaCliente">
+    Visible para cliente
+  </label>
+
+  <button (click)="crearDocumentoComunicado()">Guardar</button>
+
+  <p>{{ mensaje }}</p>
+</div>
+
+<div class="tarjeta">
+  <h2>Buscar documentos por trámite</h2>
+
+  <label>Identificador del trámite</label>
+  <input [(ngModel)]="tramiteIdConsulta" placeholder="Escribe el identificador del trámite...">
+
+  <button (click)="buscarPorTramite()">Buscar</button>
+</div>
+
+<table class="tabla-simple" *ngIf="documentosComunicados.length > 0">
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>Nombre</th>
+      <th>Descripción</th>
+      <th>Departamento</th>
+      <th>Visible para cliente</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let item of documentosComunicados">
+      <td>{{ item.tipo }}</td>
+      <td>{{ item.nombre }}</td>
+      <td>{{ item.descripcion }}</td>
+      <td>{{ item.nombreDepartamento }}</td>
+      <td>{{ item.visibleParaCliente ? 'Sí' : 'No' }}</td>
+    </tr>
+  </tbody>
+</table>

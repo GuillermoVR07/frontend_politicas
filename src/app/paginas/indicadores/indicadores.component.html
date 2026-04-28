@@ -1,0 +1,32 @@
+<h1>Indicadores básicos</h1>
+
+<div class="tarjeta" *ngIf="indicadores">
+  <p>Trámites nuevos: {{ indicadores.tramitesNuevos }}</p>
+  <p>Trámites en revisión: {{ indicadores.tramitesEnRevision }}</p>
+  <p>Trámites en evaluación: {{ indicadores.tramitesEnEvaluacion }}</p>
+  <p>Trámites pendientes: {{ indicadores.tramitesPendientes }}</p>
+  <p>Trámites observados: {{ indicadores.tramitesObservados }}</p>
+  <p>Trámites rechazados: {{ indicadores.tramitesRechazados }}</p>
+  <p>Trámites aprobados: {{ indicadores.tramitesAprobados }}</p>
+  <p>Trámites finalizados: {{ indicadores.tramitesFinalizados }}</p>
+  <p>Total de trámites: {{ indicadores.totalTramites }}</p>
+</div>
+
+<div class="tarjeta">
+  <h2>Verificar posible cuello de botella</h2>
+
+  <label>Identificador del departamento</label>
+  <input [(ngModel)]="departamentoId" placeholder="Escribe el identificador del departamento...">
+
+  <button (click)="verificarCuelloBotella()">Verificar</button>
+
+  <div *ngIf="resultadoCuelloBotella">
+    <p>Departamento: {{ resultadoCuelloBotella.departamentoId }}</p>
+    <p>
+      Posible cuello de botella:
+      {{ resultadoCuelloBotella.posibleCuelloBotella ? 'Sí' : 'No' }}
+    </p>
+  </div>
+
+  <p>{{ mensaje }}</p>
+</div>

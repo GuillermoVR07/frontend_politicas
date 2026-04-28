@@ -1,1 +1,62 @@
 /* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f8;
+  color: #1f2933;
+}
+
+h1, h2, h3 {
+  margin-top: 0;
+}
+
+button {
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+button {
+  padding: 8px 12px;
+  border: none;
+  background: #1f5f99;
+  color: white;
+  border-radius: 4px;
+}
+
+button:hover {
+  background: #16466f;
+}
+
+.tarjeta {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.tabla-simple {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.tabla-simple th,
+.tabla-simple td {
+  border: 1px solid #d8dee4;
+  padding: 8px;
+  text-align: left;
+}
+
+.tabla-simple th {
+  background: #e8eef5;
+}

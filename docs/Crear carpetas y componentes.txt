@@ -1,0 +1,18 @@
+ng generate component componentes/menu-principal
+ng generate component paginas/panel-administrador
+ng generate component paginas/panel-funcionario
+ng generate component paginas/procesos
+ng generate component paginas/tramites
+ng generate component paginas/departamentos
+ng generate component paginas/documentos-comunicados
+ng generate component paginas/indicadores
+ng generate component paginas/diagramas
+
+
+
+ng generate service compartido/servicios/servicio-proceso
+ng generate service compartido/servicios/servicio-tramite
+ng generate service compartido/servicios/servicio-departamento
+ng generate service compartido/servicios/servicio-documento-comunicado
+ng generate service compartido/servicios/servicio-indicador
+ng generate service compartido/servicios/servicio-ia

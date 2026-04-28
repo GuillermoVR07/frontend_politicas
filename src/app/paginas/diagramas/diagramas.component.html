@@ -1,0 +1,36 @@
+<h1>Diagramas e IA</h1>
+
+<div class="tarjeta">
+  <h2>Generar borrador de diagrama</h2>
+
+  <label>Descripción del proceso</label>
+  <textarea
+    rows="5"
+    [(ngModel)]="descripcionProceso"
+    placeholder="Ejemplo: El trámite inicia en atención al cliente, luego pasa a evaluación, después a legal y finalmente a almacén.">
+  </textarea>
+
+  <button (click)="generarDiagramaConIa()">Generar con IA</button>
+  <button (click)="iniciarReconocimientoVoz()">Usar voz</button>
+
+  <p>{{ mensaje }}</p>
+</div>
+
+<div class="tarjeta">
+  <h2>Respuesta de IA</h2>
+
+  <pre>{{ respuestaIa | json }}</pre>
+</div>
+
+<div class="tarjeta">
+  <h2>Área del diagrama editable</h2>
+
+  <p>
+    Aquí se integrará bpmn-js para visualizar y editar manualmente el diagrama.
+    No se construirá un editor desde cero.
+  </p>
+
+  <div class="area-diagrama">
+    Área reservada para bpmn-js
+  </div>
+</div>

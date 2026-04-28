@@ -1,0 +1,35 @@
+<h1>Procesos o políticas de negocio</h1>
+
+<div class="tarjeta">
+  <h2>Crear proceso</h2>
+
+  <label>Nombre</label>
+  <input [(ngModel)]="procesoNuevo.nombre" placeholder="Escribe el nombre del proceso...">
+
+  <label>Descripción</label>
+  <textarea [(ngModel)]="procesoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+
+  <label>Departamentos separados por coma</label>
+  <input [(ngModel)]="departamentosTexto" placeholder="Atención al cliente, Evaluación, Legal, Almacén">
+
+  <button (click)="crearProceso()">Crear proceso</button>
+
+  <p>{{ mensaje }}</p>
+</div>
+
+<table class="tabla-simple" *ngIf="procesos.length > 0">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Descripción</th>
+      <th>Departamentos</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let proceso of procesos">
+      <td>{{ proceso.nombre }}</td>
+      <td>{{ proceso.descripcion }}</td>
+      <td>{{ proceso.departamentos.join(', ') }}</td>
+    </tr>
+  </tbody>
+</table>
