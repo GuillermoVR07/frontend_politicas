@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 
 import { ServicioIaService } from '../../compartido/servicios/servicio-ia.service';
+import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
 
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
@@ -23,17 +24,21 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('contenedorDiagrama', { static: true })
   contenedorDiagrama!: ElementRef;
 
+  procesoId = '';
   descripcionProceso = '';
   respuestaIa: any;
   mensaje = '';
 
   escuchandoVoz = false;
-
+  
   xmlActual = '';
 
   private modeladorBpmn: any;
 
-  constructor(private servicioIa: ServicioIaService) {}
+  constructor(
+    private servicioIa: ServicioIaService,
+    private servicioProceso: ServicioProcesoService
+  ) {}
 
   ngAfterViewInit(): void {
     this.inicializarModelador();
@@ -133,6 +138,68 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
 
   limpiarRespuestaIa(): void {
     this.respuestaIa = null;
+  }
+
+  guardarDiagramaEnProceso(): void {
+    if (!this.procesoId.trim()) {
+      this.mensaje = 'Debe ingresar el identificador del proceso.';
+      return;
+    }
+
+    if (!this.modeladorBpmn) {
+      this.mensaje = 'El modelador todavía no está disponible.';
+      return;
+    }
+
+    this.modeladorBpmn.saveXML({ format: true })
+      .then((resultado: any) => {
+        const xml = resultado.xml;
+        this.xmlActual = xml;
+
+        this.servicioProceso.actualizarDiagrama(
+          this.procesoId,
+          xml,
+          '',
+          this.respuestaIa ? JSON.stringify(this.respuestaIa) : ''
+        ).subscribe({
+          next: () => {
+            this.mensaje = 'Diagrama guardado correctamente en el proceso.';
+          },
+          error: () => {
+            this.mensaje = 'No se pudo guardar el diagrama en el proceso.';
+          }
+        });
+      })
+      .catch(() => {
+        this.mensaje = 'No se pudo obtener el XML para guardar.';
+      });
+  }
+
+  cargarDiagramaDesdeProceso(): void {
+    if (!this.procesoId.trim()) {
+      this.mensaje = 'Debe ingresar el identificador del proceso.';
+      return;
+    }
+
+    this.servicioProceso.buscarProceso(this.procesoId).subscribe({
+      next: proceso => {
+        if (proceso.diagrama && proceso.diagrama.contenidoXml) {
+          this.modeladorBpmn.importXML(proceso.diagrama.contenidoXml)
+            .then(() => {
+              this.xmlActual = proceso.diagrama?.contenidoXml || '';
+              this.mensaje = 'Diagrama cargado desde el proceso.';
+            })
+            .catch(() => {
+              this.mensaje = 'No se pudo cargar el XML guardado del proceso.';
+            });
+        } else {
+          this.mensaje = 'El proceso no tiene un diagrama guardado.';
+        }
+      },
+      error: () => {
+        this.mensaje = 'No se pudo buscar el proceso.';
+      }
+    });
   }
 
   obtenerXmlBase(): string {

@@ -31,6 +31,24 @@
 </div>
 
 <div class="tarjeta">
+  <h2>Proceso asociado al diagrama</h2>
+
+  <label>Identificador del proceso</label>
+  <input
+    [(ngModel)]="procesoId"
+    placeholder="Pegue aquí el ID del proceso">
+
+  <div class="acciones">
+    <button (click)="cargarDiagramaDesdeProceso()">Cargar diagrama del proceso</button>
+    <button (click)="guardarDiagramaEnProceso()">Guardar diagrama en proceso</button>
+  </div>
+
+  <p>
+    El diagrama se guarda dentro del proceso seleccionado.
+  </p>
+</div>
+
+<div class="tarjeta">
   <h2>Diagrama editable</h2>
 
   <p>

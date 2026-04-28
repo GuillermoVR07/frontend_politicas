@@ -20,6 +20,7 @@
 <table class="tabla-simple" *ngIf="procesos.length > 0">
   <thead>
     <tr>
+      <th>Identificador</th>
       <th>Nombre</th>
       <th>Descripción</th>
       <th>Departamentos</th>
@@ -27,6 +28,7 @@
   </thead>
   <tbody>
     <tr *ngFor="let proceso of procesos">
+      <td>{{ proceso.id }}</td>
       <td>{{ proceso.nombre }}</td>
       <td>{{ proceso.descripcion }}</td>
       <td>{{ proceso.departamentos.join(', ') }}</td>

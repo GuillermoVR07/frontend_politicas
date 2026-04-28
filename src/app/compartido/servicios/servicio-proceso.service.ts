@@ -27,4 +27,18 @@ export class ServicioProcesoService {
   actualizarProceso(id: string, proceso: Proceso): Observable<Proceso> {
     return this.http.put<Proceso>(`${this.urlBase}/${id}`, proceso);
   }
+
+  actualizarDiagrama(
+    id: string,
+    contenidoXml: string,
+    contenidoJson: string,
+    generadoPorIa: string
+  ): Observable<Proceso> {
+    return this.http.put<Proceso>(`${this.urlBase}/${id}/diagrama`, {
+      contenidoXml,
+      contenidoJson,
+      generadoPorIa
+    });
+  }
+  
 }
