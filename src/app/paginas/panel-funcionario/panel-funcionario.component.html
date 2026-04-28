@@ -1,29 +1,121 @@
 <h1>Panel del funcionario</h1>
 
 <div class="tarjeta">
+  <h2>Buscar trámites por departamento</h2>
+
   <label>Identificador del departamento</label>
   <input [(ngModel)]="departamentoId" placeholder="Ejemplo: DEP_ATENCION">
 
   <button (click)="buscarTramitesPorDepartamento()">Buscar trámites</button>
 
-  <p *ngIf="mensaje">{{ mensaje }}</p>
+  <p class="mensaje">{{ mensaje }}</p>
 </div>
 
-<table class="tabla-simple" *ngIf="tramites.length > 0">
-  <thead>
-    <tr>
-      <th>Código</th>
-      <th>Título</th>
-      <th>Estado</th>
-      <th>Departamento actual</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let tramite of tramites">
-      <td>{{ tramite.codigo }}</td>
-      <td>{{ tramite.titulo }}</td>
-      <td>{{ tramite.estadoActual }}</td>
-      <td>{{ tramite.nombreDepartamentoActual }}</td>
-    </tr>
-  </tbody>
-</table>
+<div class="tarjeta" *ngIf="tramites.length > 0">
+  <h2>Trámites del departamento</h2>
+
+  <table class="tabla-simple">
+    <thead>
+      <tr>
+        <th>Identificador</th>
+        <th>Código</th>
+        <th>Título</th>
+        <th>Ciudadano</th>
+        <th>Estado</th>
+        <th>Departamento actual</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let tramite of tramites">
+        <td>{{ tramite.id }}</td>
+        <td>{{ tramite.codigo }}</td>
+        <td>{{ tramite.titulo }}</td>
+        <td>{{ tramite.identificacionCiudadano }}</td>
+        <td>{{ tramite.estadoActual }}</td>
+        <td>{{ tramite.nombreDepartamentoActual }}</td>
+        <td>
+          <button (click)="seleccionarTramite(tramite)">Atender</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="tarjeta" *ngIf="tramiteSeleccionado">
+  <h2>Detalle del trámite seleccionado</h2>
+
+  <p><strong>Identificador:</strong> {{ tramiteSeleccionado.id }}</p>
+  <p><strong>Código:</strong> {{ tramiteSeleccionado.codigo }}</p>
+  <p><strong>Título:</strong> {{ tramiteSeleccionado.titulo }}</p>
+  <p><strong>Descripción:</strong> {{ tramiteSeleccionado.descripcion }}</p>
+  <p><strong>Ciudadano:</strong> {{ tramiteSeleccionado.identificacionCiudadano }}</p>
+  <p><strong>Estado actual:</strong> {{ tramiteSeleccionado.estadoActual }}</p>
+  <p><strong>Departamento actual:</strong> {{ tramiteSeleccionado.nombreDepartamentoActual }}</p>
+</div>
+
+<div class="tarjeta" *ngIf="tramiteSeleccionado">
+  <h2>Actualizar trámite</h2>
+
+  <label>Nuevo estado</label>
+  <select title="Seleccione el nuevo estado" [(ngModel)]="nuevoEstado">
+    <option *ngFor="let estado of estados" [value]="estado">
+      {{ estado }}
+    </option>
+  </select>
+
+  <label>Observación</label>
+  <textarea
+    title="Escriba una observación simple sobre el avance del trámite"
+    [(ngModel)]="observacion"
+    placeholder="Escriba una observación simple sobre el avance del trámite">
+  </textarea>
+
+  <label class="opcion-visible">
+    <input type="checkbox" [(ngModel)]="visibleParaCliente">
+    Visible para cliente
+  </label>
+
+  <div class="acciones">
+    <button (click)="cambiarEstado()">Cambiar estado</button>
+  </div>
+
+  <hr>
+
+  <label>Nuevo identificador de departamento</label>
+  <input [(ngModel)]="nuevoDepartamentoId" placeholder="Ejemplo: DEP_LEGAL">
+
+  <label>Nombre del nuevo departamento</label>
+  <input [(ngModel)]="nombreNuevoDepartamento" placeholder="Ejemplo: Legal">
+
+  <div class="acciones">
+    <button (click)="cambiarDepartamento()">Derivar a otro departamento</button>
+  </div>
+</div>
+
+<div class="tarjeta" *ngIf="tramiteSeleccionado && tramiteSeleccionado.seguimientos.length > 0">
+  <h2>Seguimiento del trámite</h2>
+
+  <table class="tabla-simple">
+    <thead>
+      <tr>
+        <th>Departamento</th>
+        <th>Estado</th>
+        <th>Observación</th>
+        <th>Fecha</th>
+        <th>Visible para cliente</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let seguimiento of tramiteSeleccionado.seguimientos">
+        <td>{{ seguimiento.nombreDepartamento }}</td>
+        <td>{{ seguimiento.estado }}</td>
+        <td>{{ seguimiento.observacion }}</td>
+        <td>{{ seguimiento.fechaRegistro }}</td>
+        <td>{{ seguimiento.visibleParaCliente ? 'Sí' : 'No' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
