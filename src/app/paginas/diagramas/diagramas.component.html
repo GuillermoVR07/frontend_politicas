@@ -10,27 +10,47 @@
     placeholder="Ejemplo: El trámite inicia en atención al cliente, luego pasa a evaluación, después a legal y finalmente a almacén.">
   </textarea>
 
-  <button (click)="generarDiagramaConIa()">Generar con IA</button>
-  <button (click)="iniciarReconocimientoVoz()">Usar voz</button>
+  <div class="acciones">
+    <button (click)="generarDiagramaConIa()">Generar con IA</button>
+    <button (click)="iniciarReconocimientoVoz()">Usar voz</button>
+    <button (click)="limpiarRespuestaIa()">Limpiar respuesta IA</button>
+  </div>
 
   <p>{{ mensaje }}</p>
 </div>
 
-<div class="tarjeta">
+<div class="tarjeta" *ngIf="respuestaIa">
   <h2>Respuesta de IA</h2>
+
+  <p>
+    Esta respuesta sirve como borrador. El usuario debe revisar y corregir
+    manualmente el diagrama si es necesario.
+  </p>
 
   <pre>{{ respuestaIa | json }}</pre>
 </div>
 
 <div class="tarjeta">
-  <h2>Área del diagrama editable</h2>
+  <h2>Diagrama editable</h2>
 
   <p>
-    Aquí se integrará bpmn-js para visualizar y editar manualmente el diagrama.
-    No se construirá un editor desde cero.
+    Este editor usa bpmn-js. El usuario puede modificar manualmente el diagrama.
   </p>
 
-  <div class="area-diagrama">
-    Área reservada para bpmn-js
+  <div #contenedorDiagrama class="contenedor-diagrama"></div>
+
+  <div class="acciones">
+    <button (click)="obtenerXmlDelDiagrama()">Obtener XML actual</button>
+    <button (click)="cargarDiagramaBase()">Restaurar diagrama base</button>
   </div>
+</div>
+
+<div class="tarjeta" *ngIf="xmlActual">
+  <h2>XML actual del diagrama</h2>
+
+  <p>
+    Este XML podrá guardarse después en el backend dentro del proceso.
+  </p>
+
+  <pre>{{ xmlActual }}</pre>
 </div>

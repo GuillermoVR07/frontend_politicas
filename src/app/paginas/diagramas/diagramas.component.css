@@ -1,15 +1,22 @@
-.area-diagrama {
-  height: 400px;
-  border: 2px dashed #9fb3c8;
-  background: #f8fafc;
+.contenedor-diagrama {
+  height: 520px;
+  border: 1px solid #9fb3c8;
+  background: white;
+  overflow: hidden;
+}
+
+.acciones {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #52606d;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 pre {
   background: #f1f5f8;
   padding: 12px;
   overflow: auto;
+  max-height: 360px;
+  border-radius: 6px;
 }
