@@ -17,7 +17,19 @@
   <p>Cargando indicadores...</p>
 </div>
 
-<div class="contenedor-kpis" *ngIf="indicadores && !cargando">
+<div class="tarjeta" *ngIf="errorCarga && !cargando">
+  <p>No se pudieron cargar los indicadores.</p>
+  <p>
+    Verifique que BACKEND_POLITICAS esté activo en
+    <strong>http://localhost:8080</strong>.
+  </p>
+
+  <button type="button" (click)="obtenerIndicadores()">
+    Intentar nuevamente
+  </button>
+</div>
+
+<div class="contenedor-kpis" *ngIf="indicadores && !cargando && !errorCarga">
 
   <div class="tarjeta-kpi principal">
     <h3>Total de trámites</h3>
@@ -66,6 +78,10 @@
 
 </div>
 
+<div class="tarjeta" *ngIf="!indicadores && !cargando && !errorCarga">
+  <p>No hay indicadores cargados todavía.</p>
+</div>
+
 <div class="tarjeta">
   <h2>Verificar posible cuello de botella</h2>
 
@@ -82,7 +98,11 @@
     Verificar
   </button>
 
-  <div *ngIf="resultadoCuelloBotella" class="resultado-cuello">
+  <p *ngIf="cargandoCuelloBotella">
+    Verificando cuello de botella...
+  </p>
+
+  <div *ngIf="resultadoCuelloBotella && !cargandoCuelloBotella" class="resultado-cuello">
     <p><strong>Departamento:</strong> {{ resultadoCuelloBotella.departamentoId }}</p>
     <p>
       <strong>Posible cuello de botella:</strong>

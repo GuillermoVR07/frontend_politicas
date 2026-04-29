@@ -7,17 +7,29 @@
   </p>
 
   <button type="button" (click)="obtenerIndicadores()">
-    Recargar indicadores
+    Recargar KPIs
   </button>
 
   <p class="mensaje">{{ mensaje }}</p>
 </div>
 
 <div class="tarjeta" *ngIf="cargando">
-  <p>Cargando indicadores...</p>
+  <p>Cargando KPIs...</p>
 </div>
 
-<div class="contenedor-kpis" *ngIf="indicadores && !cargando">
+<div class="tarjeta" *ngIf="errorCarga && !cargando">
+  <p>No se pudieron cargar los KPIs.</p>
+  <p>
+    Verifique que BACKEND_POLITICAS esté activo en
+    <strong>http://localhost:8080</strong>.
+  </p>
+
+  <button type="button" (click)="obtenerIndicadores()">
+    Intentar nuevamente
+  </button>
+</div>
+
+<div class="contenedor-kpis" *ngIf="indicadores && !cargando && !errorCarga">
 
   <div class="tarjeta-kpi principal">
     <h3>Total de trámites</h3>
@@ -64,6 +76,10 @@
     <p>{{ indicadores.tramitesFinalizados }}</p>
   </div>
 
+</div>
+
+<div class="tarjeta" *ngIf="!indicadores && !cargando && !errorCarga">
+  <p>No hay KPIs cargados todavía.</p>
 </div>
 
 <div class="contenedor-opciones">

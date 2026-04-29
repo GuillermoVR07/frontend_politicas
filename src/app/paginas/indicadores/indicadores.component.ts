@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Subscription, finalize, timeout } from 'rxjs';
 
 import { ServicioIndicadorService } from '../../compartido/servicios/servicio-indicador.service';
 import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
@@ -17,8 +17,11 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
 
   departamentoId = '';
   resultadoCuelloBotella: any;
+
   mensaje = '';
   cargando = false;
+  cargandoCuelloBotella = false;
+  errorCarga = false;
 
   private suscripcionActualizacion?: Subscription;
 
@@ -52,19 +55,29 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
 
   obtenerIndicadores(): void {
     this.cargando = true;
+    this.errorCarga = false;
     this.mensaje = 'Cargando indicadores...';
 
-    this.servicioIndicador.obtenerIndicadoresGenerales().subscribe({
-      next: respuesta => {
-        this.indicadores = respuesta;
-        this.cargando = false;
-        this.mensaje = 'Indicadores actualizados.';
-      },
-      error: () => {
-        this.cargando = false;
-        this.mensaje = 'No se pudieron cargar los indicadores.';
-      }
-    });
+    this.servicioIndicador.obtenerIndicadoresGenerales()
+      .pipe(
+        timeout(8000),
+        finalize(() => {
+          this.cargando = false;
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          this.indicadores = respuesta;
+          this.errorCarga = false;
+          this.mensaje = 'Indicadores actualizados.';
+        },
+        error: error => {
+          console.error('Error al cargar indicadores:', error);
+          this.indicadores = undefined;
+          this.errorCarga = true;
+          this.mensaje = 'No se pudieron cargar los indicadores. Verifique conexión con el backend o CORS.';
+        }
+      });
   }
 
   verificarCuelloBotella(): void {
@@ -73,14 +86,25 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.servicioIndicador.verificarCuelloBotella(this.departamentoId).subscribe({
-      next: respuesta => {
-        this.resultadoCuelloBotella = respuesta;
-        this.mensaje = 'Verificación de cuello de botella realizada.';
-      },
-      error: () => {
-        this.mensaje = 'No se pudo verificar el cuello de botella.';
-      }
-    });
+    this.cargandoCuelloBotella = true;
+    this.resultadoCuelloBotella = null;
+
+    this.servicioIndicador.verificarCuelloBotella(this.departamentoId)
+      .pipe(
+        timeout(8000),
+        finalize(() => {
+          this.cargandoCuelloBotella = false;
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          this.resultadoCuelloBotella = respuesta;
+          this.mensaje = 'Verificación de cuello de botella realizada.';
+        },
+        error: error => {
+          console.error('Error al verificar cuello de botella:', error);
+          this.mensaje = 'No se pudo verificar el cuello de botella.';
+        }
+      });
   }
 }

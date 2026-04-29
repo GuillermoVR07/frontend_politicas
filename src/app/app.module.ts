@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { HttpClientModule } from '@angular/common/http';
 
 import { MenuPrincipalComponent } from './componentes/menu-principal/menu-principal.component';
 import { PanelAdministradorComponent } from './paginas/panel-administrador/panel-administrador.component';
@@ -35,6 +36,7 @@ import { DiagramasComponent } from './paginas/diagramas/diagramas.component';
     BrowserModule,
     RouterModule,
     AppRoutingModule,
+    HttpClientModule,
     CommonModule,
     FormsModule
   ],
