@@ -4,10 +4,10 @@
   <h2>{{ modoEdicion ? 'Editar proceso' : 'Crear proceso' }}</h2>
 
   <label>Nombre</label>
-  <input title="Nombre" [(ngModel)]="procesoFormulario.nombre">
+  <input title="Nombre" [(ngModel)]="procesoFormulario.nombre" placeholder="Ejemplo: Proceso de atención al cliente">
 
   <label>Descripción</label>
-  <textarea title="Descripción" [(ngModel)]="procesoFormulario.descripcion"></textarea>
+  <textarea title="Descripción" [(ngModel)]="procesoFormulario.descripcion" placeholder="Detalle sobre el proceso"></textarea>
 
   <label>Departamentos separados por coma</label>
   <input

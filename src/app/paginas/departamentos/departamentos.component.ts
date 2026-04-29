@@ -20,6 +20,7 @@ export class DepartamentosComponent implements OnInit {
   departamentoEditandoId = '';
   modoEdicion = false;
   mensaje = '';
+  cargando = false;
 
   constructor(private servicioDepartamento: ServicioDepartamentoService) {}
 
@@ -28,13 +29,30 @@ export class DepartamentosComponent implements OnInit {
   }
 
   listarDepartamentos(): void {
+    this.cargando = true;
+    this.mensaje = 'Cargando departamentos...';
+
     this.servicioDepartamento.listarDepartamentos().subscribe({
-      next: respuesta => this.departamentos = respuesta,
-      error: () => this.mensaje = 'No se pudieron cargar los departamentos.'
+      next: respuesta => {
+        this.departamentos = respuesta;
+        this.cargando = false;
+        this.mensaje = respuesta.length === 0
+          ? 'No hay departamentos registrados.'
+          : 'Departamentos cargados correctamente.';
+      },
+      error: () => {
+        this.cargando = false;
+        this.mensaje = 'No se pudieron cargar los departamentos.';
+      }
     });
   }
 
   guardarDepartamento(): void {
+    if (!this.departamentoFormulario.nombre.trim()) {
+      this.mensaje = 'Debe ingresar el nombre del departamento.';
+      return;
+    }
+
     if (this.modoEdicion && this.departamentoEditandoId) {
       this.servicioDepartamento.actualizarDepartamento(
         this.departamentoEditandoId,
@@ -45,7 +63,9 @@ export class DepartamentosComponent implements OnInit {
           this.limpiarFormulario();
           this.listarDepartamentos();
         },
-        error: () => this.mensaje = 'No se pudo actualizar el departamento.'
+        error: () => {
+          this.mensaje = 'No se pudo actualizar el departamento.';
+        }
       });
 
       return;
@@ -57,7 +77,9 @@ export class DepartamentosComponent implements OnInit {
         this.limpiarFormulario();
         this.listarDepartamentos();
       },
-      error: () => this.mensaje = 'No se pudo crear el departamento.'
+      error: () => {
+        this.mensaje = 'No se pudo crear el departamento.';
+      }
     });
   }
 
@@ -75,10 +97,13 @@ export class DepartamentosComponent implements OnInit {
 
   eliminarDepartamento(departamento: Departamento): void {
     if (!departamento.id) {
+      this.mensaje = 'No se encontró el identificador del departamento.';
       return;
     }
 
-    const confirmar = confirm(`¿Seguro que desea eliminar el departamento "${departamento.nombre}"?`);
+    const confirmar = confirm(
+      `¿Seguro que desea eliminar el departamento "${departamento.nombre}"?`
+    );
 
     if (!confirmar) {
       return;
@@ -89,7 +114,9 @@ export class DepartamentosComponent implements OnInit {
         this.mensaje = 'Departamento eliminado correctamente.';
         this.listarDepartamentos();
       },
-      error: () => this.mensaje = 'No se pudo eliminar el departamento.'
+      error: () => {
+        this.mensaje = 'No se pudo eliminar el departamento.';
+      }
     });
   }
 

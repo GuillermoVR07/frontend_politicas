@@ -53,8 +53,8 @@
   <input
     title="Nombre del departamento inicial"
     [(ngModel)]="tramiteNuevo.nombreDepartamentoInicial"
+    placeholder="Nombre del departamento se llenará automáticamente"
     readonly>
-
   <div class="acciones">
     <button type="button" (click)="guardarTramite()">
       {{ modoEdicion ? 'Actualizar trámite' : 'Crear trámite' }}

@@ -4,25 +4,40 @@
   <h2>{{ modoEdicion ? 'Editar departamento' : 'Crear departamento' }}</h2>
 
   <label>Nombre</label>
-  <input title="nombre" [(ngModel)]="departamentoFormulario.nombre">
+  <input
+    title="Nombre"
+    [(ngModel)]="departamentoFormulario.nombre"
+    placeholder="Ejemplo: Atención al cliente">
 
   <label>Descripción</label>
-  <textarea title="descripción" [(ngModel)]="departamentoFormulario.descripcion"></textarea>
+  <textarea
+    title="Descripción"
+    [(ngModel)]="departamentoFormulario.descripcion"
+    placeholder="Descripción del departamento">
+  </textarea>
 
   <div class="acciones">
-    <button (click)="guardarDepartamento()">
+    <button type="button" (click)="guardarDepartamento()">
       {{ modoEdicion ? 'Actualizar departamento' : 'Crear departamento' }}
     </button>
 
-    <button type="button" (click)="limpiarFormulario()">Limpiar</button>
+    <button type="button" (click)="limpiarFormulario()">
+      Limpiar
+    </button>
 
-    <button type="button" (click)="listarDepartamentos()">Recargar departamentos</button>
+    <button type="button" (click)="listarDepartamentos()">
+      Recargar departamentos
+    </button>
   </div>
 
   <p class="mensaje">{{ mensaje }}</p>
 </div>
 
-<table class="tabla-simple" *ngIf="departamentos.length > 0">
+<div class="tarjeta" *ngIf="cargando">
+  <p>Cargando departamentos...</p>
+</div>
+
+<table class="tabla-simple" *ngIf="!cargando && departamentos.length > 0">
   <thead>
     <tr>
       <th>Identificador</th>
@@ -38,9 +53,18 @@
       <td>{{ departamento.nombre }}</td>
       <td>{{ departamento.descripcion }}</td>
       <td>
-        <button (click)="editarDepartamento(departamento)">Editar</button>
-        <button (click)="eliminarDepartamento(departamento)">Eliminar</button>
+        <button type="button" (click)="editarDepartamento(departamento)">
+          Editar
+        </button>
+
+        <button type="button" (click)="eliminarDepartamento(departamento)">
+          Eliminar
+        </button>
       </td>
     </tr>
   </tbody>
 </table>
+
+<div class="tarjeta" *ngIf="!cargando && departamentos.length === 0">
+  <p>No hay departamentos registrados.</p>
+</div>
