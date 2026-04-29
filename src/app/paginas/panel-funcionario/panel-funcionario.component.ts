@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
+import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
 
 import { Tramite } from '../../compartido/modelos/tramite.modelo';
 import { Departamento } from '../../compartido/modelos/departamento.modelo';
@@ -13,7 +15,7 @@ import { EstadoTramite } from '../../compartido/modelos/estado-tramite.modelo';
   templateUrl: './panel-funcionario.component.html',
   styleUrls: ['./panel-funcionario.component.css']
 })
-export class PanelFuncionarioComponent implements OnInit {
+export class PanelFuncionarioComponent implements OnInit, OnDestroy {
 
   departamentos: Departamento[] = [];
 
@@ -31,13 +33,31 @@ export class PanelFuncionarioComponent implements OnInit {
 
   mensaje = '';
 
+  private suscripcionActualizacion?: Subscription;
+
   constructor(
     private servicioTramite: ServicioTramiteService,
-    private servicioDepartamento: ServicioDepartamentoService
+    private servicioDepartamento: ServicioDepartamentoService,
+    private servicioActualizacion: ServicioActualizacionService
   ) {}
 
   ngOnInit(): void {
     this.listarDepartamentos();
+
+    this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
+      .subscribe(tipo => {
+        if (tipo === 'departamentos' || tipo === 'todo') {
+          this.listarDepartamentos();
+        }
+
+        if ((tipo === 'tramites' || tipo === 'todo') && this.departamentoId) {
+          this.buscarTramitesPorDepartamento();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.suscripcionActualizacion?.unsubscribe();
   }
 
   listarDepartamentos(): void {
@@ -105,6 +125,8 @@ export class PanelFuncionarioComponent implements OnInit {
         this.tramiteSeleccionado = tramiteActualizado;
         this.mensaje = 'Estado actualizado correctamente.';
         this.buscarTramitesPorDepartamento();
+        this.servicioActualizacion.notificarActualizacion('tramites');
+        this.servicioActualizacion.notificarActualizacion('indicadores');
       },
       error: () => {
         this.mensaje = 'No se pudo cambiar el estado del trámite.';
@@ -134,6 +156,8 @@ export class PanelFuncionarioComponent implements OnInit {
         this.tramiteSeleccionado = tramiteActualizado;
         this.mensaje = 'Departamento actualizado correctamente.';
         this.buscarTramitesPorDepartamento();
+        this.servicioActualizacion.notificarActualizacion('tramites');
+        this.servicioActualizacion.notificarActualizacion('indicadores');
       },
       error: () => {
         this.mensaje = 'No se pudo cambiar el departamento del trámite.';

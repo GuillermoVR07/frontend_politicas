@@ -53,8 +53,8 @@
   <input
     title="Nombre del departamento inicial"
     [(ngModel)]="tramiteNuevo.nombreDepartamentoInicial"
-    placeholder="Nombre del departamento se llenará automáticamente"
     readonly>
+
   <div class="acciones">
     <button type="button" (click)="guardarTramite()">
       {{ modoEdicion ? 'Actualizar trámite' : 'Crear trámite' }}
@@ -75,7 +75,11 @@
 <div class="tarjeta">
   <h2>Lista de trámites</h2>
 
-  <table class="tabla-simple" *ngIf="tramites.length > 0">
+  <div *ngIf="cargando">
+    <p>Cargando trámites...</p>
+  </div>
+
+  <table class="tabla-simple" *ngIf="!cargando && tramites.length > 0">
     <thead>
       <tr>
         <th>ID</th>
@@ -113,7 +117,7 @@
     </tbody>
   </table>
 
-  <p *ngIf="tramites.length === 0">No hay trámites registrados.</p>
+  <p *ngIf="!cargando && tramites.length === 0">No hay trámites registrados.</p>
 </div>
 
 <div class="tarjeta" *ngIf="tramiteSeleccionado">
@@ -136,14 +140,19 @@
   </p>
 </div>
 
-<div class="tarjeta" *ngIf="tramiteSeleccionado">
+<div class="tarjeta">
   <h2>Cambiar estado o departamento</h2>
 
-  <label>Identificador del trámite</label>
-  <input
-    title="Identificador del trámite"
+  <label>Trámite</label>
+  <select
+    title="Trámite"
     [(ngModel)]="tramiteSeleccionadoId"
-    readonly>
+    (change)="alSeleccionarTramiteParaActualizar()">
+    <option value="">Seleccione un trámite</option>
+    <option *ngFor="let tramite of tramites" [value]="tramite.id">
+      {{ tramite.codigo }} - {{ tramite.titulo }} - {{ tramite.estadoActual }}
+    </option>
+  </select>
 
   <label>Nuevo estado</label>
   <select

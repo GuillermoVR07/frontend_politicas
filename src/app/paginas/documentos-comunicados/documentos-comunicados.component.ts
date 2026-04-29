@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 import {
   DocumentoComunicado,
@@ -11,6 +12,7 @@ import { Departamento } from '../../compartido/modelos/departamento.modelo';
 import { ServicioDocumentoComunicadoService } from '../../compartido/servicios/servicio-documento-comunicado.service';
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
+import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
 
 @Component({
   selector: 'app-documentos-comunicados',
@@ -18,7 +20,7 @@ import { ServicioDepartamentoService } from '../../compartido/servicios/servicio
   templateUrl: './documentos-comunicados.component.html',
   styleUrls: ['./documentos-comunicados.component.css']
 })
-export class DocumentosComunicadosComponent implements OnInit {
+export class DocumentosComunicadosComponent implements OnInit, OnDestroy {
 
   tipos = Object.values(TipoDocumentoComunicado);
 
@@ -45,13 +47,40 @@ export class DocumentosComunicadosComponent implements OnInit {
 
   mensaje = '';
 
+  private suscripcionActualizacion?: Subscription;
+
   constructor(
     private servicioDocumentoComunicado: ServicioDocumentoComunicadoService,
     private servicioTramite: ServicioTramiteService,
-    private servicioDepartamento: ServicioDepartamentoService
+    private servicioDepartamento: ServicioDepartamentoService,
+    private servicioActualizacion: ServicioActualizacionService
   ) {}
 
   ngOnInit(): void {
+    this.cargarDatosIniciales();
+
+    this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
+      .subscribe(tipo => {
+        if (
+          tipo === 'tramites' ||
+          tipo === 'departamentos' ||
+          tipo === 'documentos' ||
+          tipo === 'todo'
+        ) {
+          this.cargarDatosIniciales();
+
+          if (this.tramiteIdConsulta) {
+            this.buscarPorTramite();
+          }
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.suscripcionActualizacion?.unsubscribe();
+  }
+
+  cargarDatosIniciales(): void {
     this.listarTramites();
     this.listarDepartamentos();
   }
@@ -98,6 +127,7 @@ export class DocumentosComunicadosComponent implements OnInit {
           this.mensaje = 'Documento o comunicado actualizado correctamente.';
           this.limpiarFormulario();
           this.buscarPorTramite();
+          this.servicioActualizacion.notificarActualizacion('documentos');
         },
         error: () => {
           this.mensaje = 'No se pudo actualizar el documento o comunicado.';
@@ -144,6 +174,7 @@ export class DocumentosComunicadosComponent implements OnInit {
 
         this.tramiteIdConsulta = tramiteIdAnterior;
         this.buscarPorTramite();
+        this.servicioActualizacion.notificarActualizacion('documentos');
       },
       error: () => {
         this.mensaje = 'No se pudo registrar el documento o comunicado.';
@@ -223,6 +254,7 @@ export class DocumentosComunicadosComponent implements OnInit {
       next: () => {
         this.mensaje = 'Documento o comunicado eliminado correctamente.';
         this.buscarPorTramite();
+        this.servicioActualizacion.notificarActualizacion('documentos');
       },
       error: () => {
         this.mensaje = 'No se pudo eliminar el documento o comunicado.';

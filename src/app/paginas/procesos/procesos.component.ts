@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+
 import { Proceso } from '../../compartido/modelos/proceso.modelo';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
+import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
 
 @Component({
   selector: 'app-procesos',
@@ -8,7 +11,7 @@ import { ServicioProcesoService } from '../../compartido/servicios/servicio-proc
   templateUrl: './procesos.component.html',
   styleUrls: ['./procesos.component.css']
 })
-export class ProcesosComponent implements OnInit {
+export class ProcesosComponent implements OnInit, OnDestroy {
 
   procesos: Proceso[] = [];
 
@@ -22,21 +25,55 @@ export class ProcesosComponent implements OnInit {
   procesoEditandoId = '';
   modoEdicion = false;
   mensaje = '';
+  cargando = false;
 
-  constructor(private servicioProceso: ServicioProcesoService) {}
+  private suscripcionActualizacion?: Subscription;
+
+  constructor(
+    private servicioProceso: ServicioProcesoService,
+    private servicioActualizacion: ServicioActualizacionService
+  ) {}
 
   ngOnInit(): void {
     this.listarProcesos();
+
+    this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
+      .subscribe(tipo => {
+        if (tipo === 'procesos' || tipo === 'todo') {
+          this.listarProcesos();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.suscripcionActualizacion?.unsubscribe();
   }
 
   listarProcesos(): void {
+    this.cargando = true;
+    this.mensaje = 'Cargando procesos...';
+
     this.servicioProceso.listarProcesos().subscribe({
-      next: respuesta => this.procesos = respuesta,
-      error: () => this.mensaje = 'No se pudieron cargar los procesos.'
+      next: respuesta => {
+        this.procesos = respuesta;
+        this.cargando = false;
+        this.mensaje = respuesta.length === 0
+          ? 'No hay procesos registrados.'
+          : 'Procesos cargados correctamente.';
+      },
+      error: () => {
+        this.cargando = false;
+        this.mensaje = 'No se pudieron cargar los procesos.';
+      }
     });
   }
 
   guardarProceso(): void {
+    if (!this.procesoFormulario.nombre.trim()) {
+      this.mensaje = 'Debe ingresar el nombre del proceso.';
+      return;
+    }
+
     this.procesoFormulario.departamentos = this.departamentosTexto
       .split(',')
       .map(valor => valor.trim())
@@ -51,8 +88,13 @@ export class ProcesosComponent implements OnInit {
           this.mensaje = 'Proceso actualizado correctamente.';
           this.limpiarFormulario();
           this.listarProcesos();
+          this.servicioActualizacion.notificarActualizacion('procesos');
+          this.servicioActualizacion.notificarActualizacion('tramites');
+          this.servicioActualizacion.notificarActualizacion('diagramas');
         },
-        error: () => this.mensaje = 'No se pudo actualizar el proceso.'
+        error: () => {
+          this.mensaje = 'No se pudo actualizar el proceso.';
+        }
       });
 
       return;
@@ -63,8 +105,13 @@ export class ProcesosComponent implements OnInit {
         this.mensaje = 'Proceso creado correctamente.';
         this.limpiarFormulario();
         this.listarProcesos();
+        this.servicioActualizacion.notificarActualizacion('procesos');
+        this.servicioActualizacion.notificarActualizacion('tramites');
+        this.servicioActualizacion.notificarActualizacion('diagramas');
       },
-      error: () => this.mensaje = 'No se pudo crear el proceso.'
+      error: () => {
+        this.mensaje = 'No se pudo crear el proceso.';
+      }
     });
   }
 
@@ -85,6 +132,7 @@ export class ProcesosComponent implements OnInit {
 
   eliminarProceso(proceso: Proceso): void {
     if (!proceso.id) {
+      this.mensaje = 'No se encontró el identificador del proceso.';
       return;
     }
 
@@ -98,8 +146,13 @@ export class ProcesosComponent implements OnInit {
       next: () => {
         this.mensaje = 'Proceso eliminado correctamente.';
         this.listarProcesos();
+        this.servicioActualizacion.notificarActualizacion('procesos');
+        this.servicioActualizacion.notificarActualizacion('tramites');
+        this.servicioActualizacion.notificarActualizacion('diagramas');
       },
-      error: () => this.mensaje = 'No se pudo eliminar el proceso.'
+      error: () => {
+        this.mensaje = 'No se pudo eliminar el proceso.';
+      }
     });
   }
 

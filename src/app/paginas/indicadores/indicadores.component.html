@@ -1,32 +1,92 @@
-<h1>Indicadores básicos</h1>
+<h1>Indicadores y KPIs</h1>
 
-<div class="tarjeta" *ngIf="indicadores">
-  <p>Trámites nuevos: {{ indicadores.tramitesNuevos }}</p>
-  <p>Trámites en revisión: {{ indicadores.tramitesEnRevision }}</p>
-  <p>Trámites en evaluación: {{ indicadores.tramitesEnEvaluacion }}</p>
-  <p>Trámites pendientes: {{ indicadores.tramitesPendientes }}</p>
-  <p>Trámites observados: {{ indicadores.tramitesObservados }}</p>
-  <p>Trámites rechazados: {{ indicadores.tramitesRechazados }}</p>
-  <p>Trámites aprobados: {{ indicadores.tramitesAprobados }}</p>
-  <p>Trámites finalizados: {{ indicadores.tramitesFinalizados }}</p>
-  <p>Total de trámites: {{ indicadores.totalTramites }}</p>
+<div class="tarjeta">
+  <p>
+    Esta pantalla muestra indicadores básicos de los trámites registrados.
+    Los valores se actualizan cuando se crean, editan, eliminan o modifican trámites.
+  </p>
+
+  <button type="button" (click)="obtenerIndicadores()">
+    Recargar indicadores
+  </button>
+
+  <p class="mensaje">{{ mensaje }}</p>
+</div>
+
+<div class="tarjeta" *ngIf="cargando">
+  <p>Cargando indicadores...</p>
+</div>
+
+<div class="contenedor-kpis" *ngIf="indicadores && !cargando">
+
+  <div class="tarjeta-kpi principal">
+    <h3>Total de trámites</h3>
+    <p>{{ indicadores.totalTramites }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Nuevos</h3>
+    <p>{{ indicadores.tramitesNuevos }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>En revisión</h3>
+    <p>{{ indicadores.tramitesEnRevision }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>En evaluación</h3>
+    <p>{{ indicadores.tramitesEnEvaluacion }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Pendientes</h3>
+    <p>{{ indicadores.tramitesPendientes }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Observados</h3>
+    <p>{{ indicadores.tramitesObservados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Rechazados</h3>
+    <p>{{ indicadores.tramitesRechazados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Aprobados</h3>
+    <p>{{ indicadores.tramitesAprobados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Finalizados</h3>
+    <p>{{ indicadores.tramitesFinalizados }}</p>
+  </div>
+
 </div>
 
 <div class="tarjeta">
   <h2>Verificar posible cuello de botella</h2>
 
+  <p>
+    Ingrese el identificador del departamento para verificar si hay una posible acumulación de trámites.
+  </p>
+
   <label>Identificador del departamento</label>
-  <input [(ngModel)]="departamentoId" placeholder="Escribe el identificador del departamento...">
+  <input
+    [(ngModel)]="departamentoId"
+    placeholder="Ejemplo: DEP_ATENCION">
 
-  <button (click)="verificarCuelloBotella()">Verificar</button>
+  <button type="button" (click)="verificarCuelloBotella()">
+    Verificar
+  </button>
 
-  <div *ngIf="resultadoCuelloBotella">
-    <p>Departamento: {{ resultadoCuelloBotella.departamentoId }}</p>
+  <div *ngIf="resultadoCuelloBotella" class="resultado-cuello">
+    <p><strong>Departamento:</strong> {{ resultadoCuelloBotella.departamentoId }}</p>
     <p>
-      Posible cuello de botella:
+      <strong>Posible cuello de botella:</strong>
       {{ resultadoCuelloBotella.posibleCuelloBotella ? 'Sí' : 'No' }}
     </p>
   </div>
-
-  <p>{{ mensaje }}</p>
 </div>

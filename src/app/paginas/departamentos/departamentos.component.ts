@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+
 import { Departamento } from '../../compartido/modelos/departamento.modelo';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
+import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
 
 @Component({
   selector: 'app-departamentos',
@@ -8,7 +11,7 @@ import { ServicioDepartamentoService } from '../../compartido/servicios/servicio
   templateUrl: './departamentos.component.html',
   styleUrls: ['./departamentos.component.css']
 })
-export class DepartamentosComponent implements OnInit {
+export class DepartamentosComponent implements OnInit, OnDestroy {
 
   departamentos: Departamento[] = [];
 
@@ -22,10 +25,26 @@ export class DepartamentosComponent implements OnInit {
   mensaje = '';
   cargando = false;
 
-  constructor(private servicioDepartamento: ServicioDepartamentoService) {}
+  private suscripcionActualizacion?: Subscription;
+
+  constructor(
+    private servicioDepartamento: ServicioDepartamentoService,
+    private servicioActualizacion: ServicioActualizacionService
+  ) {}
 
   ngOnInit(): void {
     this.listarDepartamentos();
+
+    this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
+      .subscribe(tipo => {
+        if (tipo === 'departamentos' || tipo === 'todo') {
+          this.listarDepartamentos();
+        }
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.suscripcionActualizacion?.unsubscribe();
   }
 
   listarDepartamentos(): void {
@@ -62,6 +81,8 @@ export class DepartamentosComponent implements OnInit {
           this.mensaje = 'Departamento actualizado correctamente.';
           this.limpiarFormulario();
           this.listarDepartamentos();
+          this.servicioActualizacion.notificarActualizacion('departamentos');
+          this.servicioActualizacion.notificarActualizacion('tramites');
         },
         error: () => {
           this.mensaje = 'No se pudo actualizar el departamento.';
@@ -76,6 +97,8 @@ export class DepartamentosComponent implements OnInit {
         this.mensaje = 'Departamento creado correctamente.';
         this.limpiarFormulario();
         this.listarDepartamentos();
+        this.servicioActualizacion.notificarActualizacion('departamentos');
+        this.servicioActualizacion.notificarActualizacion('tramites');
       },
       error: () => {
         this.mensaje = 'No se pudo crear el departamento.';
@@ -113,6 +136,8 @@ export class DepartamentosComponent implements OnInit {
       next: () => {
         this.mensaje = 'Departamento eliminado correctamente.';
         this.listarDepartamentos();
+        this.servicioActualizacion.notificarActualizacion('departamentos');
+        this.servicioActualizacion.notificarActualizacion('tramites');
       },
       error: () => {
         this.mensaje = 'No se pudo eliminar el departamento.';

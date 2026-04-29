@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { RespuestaIndicadores } from '../modelos/indicador.modelo';
 
 @Injectable({
@@ -8,7 +9,7 @@ import { RespuestaIndicadores } from '../modelos/indicador.modelo';
 })
 export class ServicioIndicadorService {
 
-  private readonly urlBase = 'http://localhost:8080/api/indicadores';
+  private urlBase = 'http://localhost:8080/api/indicadores';
 
   constructor(private http: HttpClient) {}
 

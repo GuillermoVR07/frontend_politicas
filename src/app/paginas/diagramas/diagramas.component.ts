@@ -6,8 +6,12 @@ import {
   ViewChild
 } from '@angular/core';
 
+import { Subscription } from 'rxjs';
+
 import { ServicioIaService } from '../../compartido/servicios/servicio-ia.service';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
+import { ServicioActualizacionService } from '../../compartido/servicios/servicio-actualizacion.service';
+
 import { Proceso } from '../../compartido/modelos/proceso.modelo';
 
 import BpmnModeler from 'bpmn-js/lib/Modeler';
@@ -36,18 +40,29 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   xmlActual = '';
 
   private modeladorBpmn: any;
+  private suscripcionActualizacion?: Subscription;
 
   constructor(
     private servicioIa: ServicioIaService,
-    private servicioProceso: ServicioProcesoService
+    private servicioProceso: ServicioProcesoService,
+    private servicioActualizacion: ServicioActualizacionService
   ) {}
 
   ngAfterViewInit(): void {
     this.inicializarModelador();
     this.listarProcesos();
+
+    this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
+      .subscribe(tipo => {
+        if (tipo === 'procesos' || tipo === 'diagramas' || tipo === 'todo') {
+          this.listarProcesos();
+        }
+      });
   }
 
   ngOnDestroy(): void {
+    this.suscripcionActualizacion?.unsubscribe();
+
     if (this.modeladorBpmn) {
       this.modeladorBpmn.destroy();
     }
@@ -73,6 +88,11 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   }
 
   cargarDiagramaBase(): void {
+    if (!this.modeladorBpmn) {
+      this.mensaje = 'El modelador todavía no está disponible.';
+      return;
+    }
+
     this.modeladorBpmn.importXML(this.obtenerXmlBase())
       .then(() => {
         this.mensaje = 'Diagrama base cargado correctamente.';
@@ -191,6 +211,8 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
         ).subscribe({
           next: () => {
             this.mensaje = 'Diagrama guardado correctamente en el proceso.';
+            this.servicioActualizacion.notificarActualizacion('diagramas');
+            this.servicioActualizacion.notificarActualizacion('procesos');
           },
           error: () => {
             this.mensaje = 'No se pudo guardar el diagrama en el proceso.';

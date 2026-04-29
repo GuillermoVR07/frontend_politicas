@@ -5,11 +5,70 @@
     Desde este panel se supervisan procesos, diagramas, trámites,
     documentos, indicadores y posibles cuellos de botella.
   </p>
+
+  <button type="button" (click)="obtenerIndicadores()">
+    Recargar indicadores
+  </button>
+
+  <p class="mensaje">{{ mensaje }}</p>
+</div>
+
+<div class="tarjeta" *ngIf="cargando">
+  <p>Cargando indicadores...</p>
+</div>
+
+<div class="contenedor-kpis" *ngIf="indicadores && !cargando">
+
+  <div class="tarjeta-kpi principal">
+    <h3>Total de trámites</h3>
+    <p>{{ indicadores.totalTramites }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Nuevos</h3>
+    <p>{{ indicadores.tramitesNuevos }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>En revisión</h3>
+    <p>{{ indicadores.tramitesEnRevision }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>En evaluación</h3>
+    <p>{{ indicadores.tramitesEnEvaluacion }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Pendientes</h3>
+    <p>{{ indicadores.tramitesPendientes }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Observados</h3>
+    <p>{{ indicadores.tramitesObservados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Rechazados</h3>
+    <p>{{ indicadores.tramitesRechazados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Aprobados</h3>
+    <p>{{ indicadores.tramitesAprobados }}</p>
+  </div>
+
+  <div class="tarjeta-kpi">
+    <h3>Finalizados</h3>
+    <p>{{ indicadores.tramitesFinalizados }}</p>
+  </div>
+
 </div>
 
 <div class="contenedor-opciones">
   <a routerLink="/procesos">Gestionar procesos</a>
   <a routerLink="/diagramas">Diagramas e IA</a>
   <a routerLink="/tramites">Gestionar trámites</a>
-  <a routerLink="/indicadores">Ver indicadores</a>
+  <a routerLink="/indicadores">Ver indicadores detallados</a>
 </div>
