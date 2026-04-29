@@ -25,12 +25,12 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   contenedorDiagrama!: ElementRef;
 
   procesoId = '';
+
   descripcionProceso = '';
   respuestaIa: any;
   mensaje = '';
 
   escuchandoVoz = false;
-  
   xmlActual = '';
 
   private modeladorBpmn: any;
@@ -74,10 +74,25 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    if (!this.modeladorBpmn) {
+      this.mensaje = 'El modelador BPMN todavía no está disponible.';
+      return;
+    }
+
     this.servicioIa.generarDiagrama(this.descripcionProceso).subscribe({
       next: respuesta => {
         this.respuestaIa = respuesta;
-        this.mensaje = 'Borrador generado por IA. Revise la respuesta y ajuste el diagrama manualmente.';
+
+        const xmlGenerado = this.convertirRespuestaIaABpmn(respuesta);
+
+        this.modeladorBpmn.importXML(xmlGenerado)
+          .then(() => {
+            this.xmlActual = xmlGenerado;
+            this.mensaje = 'Diagrama generado automáticamente con IA. Puede corregirlo manualmente.';
+          })
+          .catch(() => {
+            this.mensaje = 'La IA respondió, pero no se pudo cargar el diagrama automáticamente.';
+          });
       },
       error: () => {
         this.mensaje = 'No se pudo generar el diagrama con IA.';
@@ -107,7 +122,9 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
       const texto = evento.results[0][0].transcript;
       this.descripcionProceso = texto;
       this.escuchandoVoz = false;
-      this.mensaje = 'Texto capturado desde voz.';
+      this.mensaje = 'Texto capturado desde voz. Generando diagrama automáticamente...';
+
+      this.generarDiagramaConIa();
     };
 
     reconocimiento.onerror = () => {
@@ -134,10 +151,6 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
       .catch(() => {
         this.mensaje = 'No se pudo obtener el XML del diagrama.';
       });
-  }
-
-  limpiarRespuestaIa(): void {
-    this.respuestaIa = null;
   }
 
   guardarDiagramaEnProceso(): void {
@@ -200,6 +213,185 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
         this.mensaje = 'No se pudo buscar el proceso.';
       }
     });
+  }
+
+  limpiarRespuestaIa(): void {
+    this.respuestaIa = null;
+  }
+
+  convertirRespuestaIaABpmn(respuesta: any): string {
+    const actividades = respuesta.actividades || [];
+    const conexiones = respuesta.conexiones || [];
+
+    if (actividades.length === 0) {
+      return this.obtenerXmlBase();
+    }
+
+    let elementosProceso = '';
+    let elementosDiagrama = '';
+    let elementosLineas = '';
+
+    const inicioId = 'Inicio';
+    const finId = 'Fin';
+
+    elementosProceso += `
+      <bpmn:startEvent id="${inicioId}" name="Inicio">
+        <bpmn:outgoing>Flujo_Inicio</bpmn:outgoing>
+      </bpmn:startEvent>
+    `;
+
+    actividades.forEach((actividad: any, indice: number) => {
+      const idActividad = this.limpiarIdBpmn(actividad.id || `Actividad_${indice + 1}`);
+      const nombreActividad = this.escaparXml(actividad.nombre || `Actividad ${indice + 1}`);
+
+      const flujoEntrada = indice === 0
+        ? 'Flujo_Inicio'
+        : `Flujo_${this.limpiarIdBpmn(actividades[indice - 1].id)}_${idActividad}`;
+
+      const flujoSalida = indice === actividades.length - 1
+        ? 'Flujo_Fin'
+        : `Flujo_${idActividad}_${this.limpiarIdBpmn(actividades[indice + 1].id)}`;
+
+      elementosProceso += `
+        <bpmn:task id="${idActividad}" name="${nombreActividad}">
+          <bpmn:incoming>${flujoEntrada}</bpmn:incoming>
+          <bpmn:outgoing>${flujoSalida}</bpmn:outgoing>
+        </bpmn:task>
+      `;
+    });
+
+    elementosProceso += `
+      <bpmn:endEvent id="${finId}" name="Finalizado">
+        <bpmn:incoming>Flujo_Fin</bpmn:incoming>
+      </bpmn:endEvent>
+    `;
+
+    if (actividades.length > 0) {
+      elementosProceso += `
+        <bpmn:sequenceFlow id="Flujo_Inicio" sourceRef="${inicioId}" targetRef="${this.limpiarIdBpmn(actividades[0].id)}" />
+      `;
+    }
+
+    conexiones.forEach((conexion: any) => {
+      const origen = this.limpiarIdBpmn(conexion.origen);
+      const destino = this.limpiarIdBpmn(conexion.destino);
+
+      elementosProceso += `
+        <bpmn:sequenceFlow id="Flujo_${origen}_${destino}" sourceRef="${origen}" targetRef="${destino}" />
+      `;
+    });
+
+    const ultimaActividad = actividades[actividades.length - 1];
+
+    elementosProceso += `
+      <bpmn:sequenceFlow id="Flujo_Fin" sourceRef="${this.limpiarIdBpmn(ultimaActividad.id)}" targetRef="${finId}" />
+    `;
+
+    elementosDiagrama += `
+      <bpmndi:BPMNShape id="Forma_Inicio" bpmnElement="${inicioId}">
+        <dc:Bounds x="120" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    `;
+
+    actividades.forEach((actividad: any, indice: number) => {
+      const idActividad = this.limpiarIdBpmn(actividad.id);
+      const posicionX = 220 + indice * 180;
+
+      elementosDiagrama += `
+        <bpmndi:BPMNShape id="Forma_${idActividad}" bpmnElement="${idActividad}">
+          <dc:Bounds x="${posicionX}" y="158" width="130" height="80" />
+        </bpmndi:BPMNShape>
+      `;
+    });
+
+    const posicionFinX = 220 + actividades.length * 180;
+
+    elementosDiagrama += `
+      <bpmndi:BPMNShape id="Forma_Fin" bpmnElement="${finId}">
+        <dc:Bounds x="${posicionFinX}" y="180" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    `;
+
+    elementosLineas += `
+      <bpmndi:BPMNEdge id="Linea_Flujo_Inicio" bpmnElement="Flujo_Inicio">
+        <di:waypoint x="156" y="198" />
+        <di:waypoint x="220" y="198" />
+      </bpmndi:BPMNEdge>
+    `;
+
+    conexiones.forEach((conexion: any, indice: number) => {
+      const origen = this.limpiarIdBpmn(conexion.origen);
+      const destino = this.limpiarIdBpmn(conexion.destino);
+
+      const xInicio = 350 + indice * 180;
+      const xFin = 400 + indice * 180;
+
+      elementosLineas += `
+        <bpmndi:BPMNEdge id="Linea_Flujo_${origen}_${destino}" bpmnElement="Flujo_${origen}_${destino}">
+          <di:waypoint x="${xInicio}" y="198" />
+          <di:waypoint x="${xFin}" y="198" />
+        </bpmndi:BPMNEdge>
+      `;
+    });
+
+    elementosLineas += `
+      <bpmndi:BPMNEdge id="Linea_Flujo_Fin" bpmnElement="Flujo_Fin">
+        <di:waypoint x="${posicionFinX - 50}" y="198" />
+        <di:waypoint x="${posicionFinX}" y="198" />
+      </bpmndi:BPMNEdge>
+    `;
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definiciones_Proceso_IA"
+  targetNamespace="http://politicas-negocio/proceso-ia">
+
+  <bpmn:process id="Proceso_Generado_IA" name="${this.escaparXml(respuesta.nombreProceso || 'Proceso generado con IA')}" isExecutable="false">
+    ${elementosProceso}
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="Diagrama_Proceso_IA">
+    <bpmndi:BPMNPlane id="Plano_Proceso_IA" bpmnElement="Proceso_Generado_IA">
+      ${elementosDiagrama}
+      ${elementosLineas}
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+  }
+
+  limpiarIdBpmn(valor: string): string {
+    if (!valor) {
+      return 'Actividad';
+    }
+
+    return valor
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ñ/g, 'n')
+      .replace(/Ñ/g, 'N')
+      .replace(/[^a-zA-Z0-9_]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  }
+
+  escaparXml(valor: string): string {
+    if (!valor) {
+      return '';
+    }
+
+    return valor
+      .toString()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
   }
 
   obtenerXmlBase(): string {
