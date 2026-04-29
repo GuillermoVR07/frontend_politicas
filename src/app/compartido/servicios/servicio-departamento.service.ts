@@ -27,4 +27,9 @@ export class ServicioDepartamentoService {
   actualizarDepartamento(id: string, departamento: Departamento): Observable<Departamento> {
     return this.http.put<Departamento>(`${this.urlBase}/${id}`, departamento);
   }
+
+  eliminarDepartamento(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.urlBase}/${id}`);
+  }
+
 }

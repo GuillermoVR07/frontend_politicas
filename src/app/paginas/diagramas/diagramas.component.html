@@ -11,9 +11,9 @@
   </textarea>
 
   <div class="acciones">
-    <button (click)="generarDiagramaConIa()">Generar con IA</button>
-    <button (click)="iniciarReconocimientoVoz()">Usar voz</button>
-    <button (click)="limpiarRespuestaIa()">Limpiar respuesta IA</button>
+    <button type="button" (click)="generarDiagramaConIa()">Generar con IA</button>
+    <button type="button" (click)="iniciarReconocimientoVoz()">Hablar y generar diagrama</button>
+    <button type="button" (click)="limpiarRespuestaIa()">Limpiar respuesta IA</button>
   </div>
 
   <p>{{ mensaje }}</p>
@@ -33,14 +33,26 @@
 <div class="tarjeta">
   <h2>Proceso asociado al diagrama</h2>
 
-  <label>Identificador del proceso</label>
-  <input
-    [(ngModel)]="procesoId"
-    placeholder="Pegue aquí el ID del proceso">
+  <label>Proceso</label>
+  <select title="Proceso" [(ngModel)]="procesoId">
+    <option value="">Seleccione un proceso</option>
+    <option *ngFor="let proceso of procesos" [value]="proceso.id">
+      {{ proceso.nombre }}
+    </option>
+  </select>
 
   <div class="acciones">
-    <button (click)="cargarDiagramaDesdeProceso()">Cargar diagrama del proceso</button>
-    <button (click)="guardarDiagramaEnProceso()">Guardar diagrama en proceso</button>
+    <button type="button" (click)="cargarDiagramaDesdeProceso()">
+      Cargar diagrama del proceso
+    </button>
+
+    <button type="button" (click)="guardarDiagramaEnProceso()">
+      Guardar diagrama en proceso
+    </button>
+
+    <button type="button" (click)="listarProcesos()">
+      Recargar procesos
+    </button>
   </div>
 
   <p>
@@ -58,8 +70,8 @@
   <div #contenedorDiagrama class="contenedor-diagrama"></div>
 
   <div class="acciones">
-    <button (click)="obtenerXmlDelDiagrama()">Obtener XML actual</button>
-    <button (click)="cargarDiagramaBase()">Restaurar diagrama base</button>
+    <button type="button" (click)="obtenerXmlDelDiagrama()">Obtener XML actual</button>
+    <button type="button" (click)="cargarDiagramaBase()">Restaurar diagrama base</button>
   </div>
 </div>
 

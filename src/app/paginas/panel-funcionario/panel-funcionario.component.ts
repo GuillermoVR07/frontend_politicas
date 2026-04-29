@@ -1,6 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
+import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
+
 import { Tramite } from '../../compartido/modelos/tramite.modelo';
+import { Departamento } from '../../compartido/modelos/departamento.modelo';
 import { EstadoTramite } from '../../compartido/modelos/estado-tramite.modelo';
 
 @Component({
@@ -9,7 +13,9 @@ import { EstadoTramite } from '../../compartido/modelos/estado-tramite.modelo';
   templateUrl: './panel-funcionario.component.html',
   styleUrls: ['./panel-funcionario.component.css']
 })
-export class PanelFuncionarioComponent {
+export class PanelFuncionarioComponent implements OnInit {
+
+  departamentos: Departamento[] = [];
 
   departamentoId = '';
   tramites: Tramite[] = [];
@@ -25,11 +31,29 @@ export class PanelFuncionarioComponent {
 
   mensaje = '';
 
-  constructor(private servicioTramite: ServicioTramiteService) {}
+  constructor(
+    private servicioTramite: ServicioTramiteService,
+    private servicioDepartamento: ServicioDepartamentoService
+  ) {}
+
+  ngOnInit(): void {
+    this.listarDepartamentos();
+  }
+
+  listarDepartamentos(): void {
+    this.servicioDepartamento.listarDepartamentos().subscribe({
+      next: respuesta => {
+        this.departamentos = respuesta;
+      },
+      error: () => {
+        this.mensaje = 'No se pudieron cargar los departamentos.';
+      }
+    });
+  }
 
   buscarTramitesPorDepartamento(): void {
     if (!this.departamentoId.trim()) {
-      this.mensaje = 'Debe ingresar el identificador del departamento.';
+      this.mensaje = 'Debe seleccionar un departamento.';
       return;
     }
 
@@ -53,6 +77,16 @@ export class PanelFuncionarioComponent {
     this.observacion = '';
     this.visibleParaCliente = true;
     this.mensaje = 'Trámite seleccionado.';
+  }
+
+  alSeleccionarNuevoDepartamento(): void {
+    const departamento = this.departamentos.find(
+      item => item.id === this.nuevoDepartamentoId
+    );
+
+    if (departamento) {
+      this.nombreNuevoDepartamento = departamento.nombre;
+    }
   }
 
   cambiarEstado(): void {
@@ -85,7 +119,7 @@ export class PanelFuncionarioComponent {
     }
 
     if (!this.nuevoDepartamentoId.trim() || !this.nombreNuevoDepartamento.trim()) {
-      this.mensaje = 'Debe ingresar el nuevo departamento.';
+      this.mensaje = 'Debe seleccionar el nuevo departamento.';
       return;
     }
 

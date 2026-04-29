@@ -1,30 +1,73 @@
 <h1>Trámites</h1>
 
 <div class="tarjeta">
-  <h2>Crear trámite</h2>
+  <h2>{{ modoEdicion ? 'Editar trámite' : 'Crear trámite' }}</h2>
 
   <label>Código</label>
-  <input title="Código" [(ngModel)]="tramiteNuevo.codigo" placeholder="Ejemplo: TRAM-001">
+  <input
+    title="Código"
+    [(ngModel)]="tramiteNuevo.codigo"
+    placeholder="Ejemplo: TRAM-001">
 
   <label>Título</label>
-  <input title="Título" [(ngModel)]="tramiteNuevo.titulo" placeholder="Solicitud empresarial de prueba">
+  <input
+    title="Título"
+    [(ngModel)]="tramiteNuevo.titulo"
+    placeholder="Solicitud empresarial de prueba">
 
   <label>Descripción</label>
-  <textarea title="Descripción" [(ngModel)]="tramiteNuevo.descripcion" placeholder="Descripción detallada del trámite"></textarea>
+  <textarea
+    title="Descripción"
+    [(ngModel)]="tramiteNuevo.descripcion"
+    placeholder="Descripción detallada del trámite">
+  </textarea>
 
   <label>Identificación de ciudadano</label>
-  <input title="Identificación de ciudadano" [(ngModel)]="tramiteNuevo.identificacionCiudadano" placeholder="Ejemplo: 12345678">
+  <input
+    title="Identificación de ciudadano"
+    [(ngModel)]="tramiteNuevo.identificacionCiudadano"
+    placeholder="Ejemplo: 12345678">
 
-  <label>Identificador del proceso</label>
-  <input title="Identificador del proceso" [(ngModel)]="tramiteNuevo.procesoId" placeholder="Pegue aquí el ID del proceso">
+  <label>Proceso</label>
+  <select
+    title="Proceso"
+    [(ngModel)]="tramiteNuevo.procesoId">
+    <option value="">Seleccione un proceso</option>
+    <option *ngFor="let proceso of procesos" [value]="proceso.id">
+      {{ proceso.nombre }}
+    </option>
+  </select>
 
-  <label>Identificador del departamento inicial</label>
-  <input title="Identificador del departamento inicial" [(ngModel)]="tramiteNuevo.departamentoInicialId" placeholder="Ejemplo: DEP_ATENCION">
+  <label>Departamento inicial</label>
+  <select
+    title="Departamento inicial"
+    [(ngModel)]="tramiteNuevo.departamentoInicialId"
+    (change)="alSeleccionarDepartamentoInicial()">
+    <option value="">Seleccione un departamento</option>
+    <option *ngFor="let departamento of departamentos" [value]="departamento.id">
+      {{ departamento.nombre }}
+    </option>
+  </select>
 
   <label>Nombre del departamento inicial</label>
-  <input title="Nombre del departamento inicial" [(ngModel)]="tramiteNuevo.nombreDepartamentoInicial" placeholder="Atención al cliente">
+  <input
+    title="Nombre del departamento inicial"
+    [(ngModel)]="tramiteNuevo.nombreDepartamentoInicial"
+    readonly>
 
-  <button (click)="crearTramite()">Crear trámite</button>
+  <div class="acciones">
+    <button type="button" (click)="guardarTramite()">
+      {{ modoEdicion ? 'Actualizar trámite' : 'Crear trámite' }}
+    </button>
+
+    <button type="button" (click)="limpiarFormularioTramite()">
+      Limpiar
+    </button>
+
+    <button type="button" (click)="listarTramites()">
+      Recargar trámites
+    </button>
+  </div>
 
   <p class="mensaje">{{ mensaje }}</p>
 </div>
@@ -41,7 +84,7 @@
         <th>Ciudadano</th>
         <th>Estado</th>
         <th>Departamento</th>
-        <th>Acción</th>
+        <th>Acciones</th>
       </tr>
     </thead>
 
@@ -54,7 +97,17 @@
         <td>{{ tramite.estadoActual }}</td>
         <td>{{ tramite.nombreDepartamentoActual }}</td>
         <td>
-          <button (click)="seleccionarTramite(tramite)">Seleccionar</button>
+          <button type="button" (click)="seleccionarTramite(tramite)">
+            Seleccionar
+          </button>
+
+          <button type="button" (click)="editarTramite(tramite)">
+            Editar
+          </button>
+
+          <button type="button" (click)="eliminarTramite(tramite)">
+            Eliminar
+          </button>
         </td>
       </tr>
     </tbody>
@@ -87,10 +140,15 @@
   <h2>Cambiar estado o departamento</h2>
 
   <label>Identificador del trámite</label>
-  <input title="Identificador del trámite" [(ngModel)]="tramiteSeleccionadoId">
+  <input
+    title="Identificador del trámite"
+    [(ngModel)]="tramiteSeleccionadoId"
+    readonly>
 
   <label>Nuevo estado</label>
-  <select title="Nuevo estado" [(ngModel)]="nuevoEstado">
+  <select
+    title="Nuevo estado"
+    [(ngModel)]="nuevoEstado">
     <option *ngFor="let estado of estados" [value]="estado">
       {{ estado }}
     </option>
@@ -104,28 +162,49 @@
   </textarea>
 
   <label class="opcion-visible">
-    <input type="checkbox" title="Visible para cliente" [(ngModel)]="visibleParaCliente">
+    <input
+      type="checkbox"
+      title="Visible para cliente"
+      [(ngModel)]="visibleParaCliente">
     Visible para cliente
   </label>
 
   <div class="acciones">
-    <button (click)="cambiarEstado()">Cambiar estado</button>
+    <button type="button" (click)="cambiarEstado()">
+      Cambiar estado
+    </button>
   </div>
 
   <hr>
 
-  <label>Nuevo identificador de departamento</label>
-  <input title="Nuevo identificador de departamento" [(ngModel)]="nuevoDepartamentoId" placeholder="Ejemplo: DEP_LEGAL">
+  <label>Nuevo departamento</label>
+  <select
+    title="Nuevo departamento"
+    [(ngModel)]="nuevoDepartamentoId"
+    (change)="alSeleccionarNuevoDepartamento()">
+    <option value="">Seleccione un departamento</option>
+    <option *ngFor="let departamento of departamentos" [value]="departamento.id">
+      {{ departamento.nombre }}
+    </option>
+  </select>
 
   <label>Nombre del nuevo departamento</label>
-  <input title="Nombre del nuevo departamento" [(ngModel)]="nombreNuevoDepartamento" placeholder="Ejemplo: Legal">
+  <input
+    title="Nombre del nuevo departamento"
+    [(ngModel)]="nombreNuevoDepartamento"
+    readonly>
 
   <div class="acciones">
-    <button (click)="cambiarDepartamento()">Cambiar departamento</button>
+    <button type="button" (click)="cambiarDepartamento()">
+      Cambiar departamento
+    </button>
   </div>
 </div>
 
-<div class="tarjeta" *ngIf="tramiteSeleccionado && tramiteSeleccionado.seguimientos.length > 0">
+<div
+  class="tarjeta"
+  *ngIf="tramiteSeleccionado && tramiteSeleccionado.seguimientos.length > 0">
+
   <h2>Seguimiento completo</h2>
 
   <table class="tabla-simple">

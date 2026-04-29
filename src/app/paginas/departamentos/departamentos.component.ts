@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Departamento } from '../../compartido/modelos/departamento.modelo';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
-import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-departamentos',
   standalone: false,
@@ -13,11 +12,13 @@ export class DepartamentosComponent implements OnInit {
 
   departamentos: Departamento[] = [];
 
-  departamentoNuevo: Departamento = {
+  departamentoFormulario: Departamento = {
     nombre: '',
     descripcion: ''
   };
 
+  departamentoEditandoId = '';
+  modoEdicion = false;
   mensaje = '';
 
   constructor(private servicioDepartamento: ServicioDepartamentoService) {}
@@ -33,14 +34,72 @@ export class DepartamentosComponent implements OnInit {
     });
   }
 
-  crearDepartamento(): void {
-    this.servicioDepartamento.crearDepartamento(this.departamentoNuevo).subscribe({
+  guardarDepartamento(): void {
+    if (this.modoEdicion && this.departamentoEditandoId) {
+      this.servicioDepartamento.actualizarDepartamento(
+        this.departamentoEditandoId,
+        this.departamentoFormulario
+      ).subscribe({
+        next: () => {
+          this.mensaje = 'Departamento actualizado correctamente.';
+          this.limpiarFormulario();
+          this.listarDepartamentos();
+        },
+        error: () => this.mensaje = 'No se pudo actualizar el departamento.'
+      });
+
+      return;
+    }
+
+    this.servicioDepartamento.crearDepartamento(this.departamentoFormulario).subscribe({
       next: () => {
         this.mensaje = 'Departamento creado correctamente.';
-        this.departamentoNuevo = { nombre: '', descripcion: '' };
+        this.limpiarFormulario();
         this.listarDepartamentos();
       },
       error: () => this.mensaje = 'No se pudo crear el departamento.'
     });
+  }
+
+  editarDepartamento(departamento: Departamento): void {
+    this.modoEdicion = true;
+    this.departamentoEditandoId = departamento.id || '';
+
+    this.departamentoFormulario = {
+      nombre: departamento.nombre,
+      descripcion: departamento.descripcion
+    };
+
+    this.mensaje = 'Editando departamento seleccionado.';
+  }
+
+  eliminarDepartamento(departamento: Departamento): void {
+    if (!departamento.id) {
+      return;
+    }
+
+    const confirmar = confirm(`¿Seguro que desea eliminar el departamento "${departamento.nombre}"?`);
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.servicioDepartamento.eliminarDepartamento(departamento.id).subscribe({
+      next: () => {
+        this.mensaje = 'Departamento eliminado correctamente.';
+        this.listarDepartamentos();
+      },
+      error: () => this.mensaje = 'No se pudo eliminar el departamento.'
+    });
+  }
+
+  limpiarFormulario(): void {
+    this.departamentoFormulario = {
+      nombre: '',
+      descripcion: ''
+    };
+
+    this.departamentoEditandoId = '';
+    this.modoEdicion = false;
   }
 }

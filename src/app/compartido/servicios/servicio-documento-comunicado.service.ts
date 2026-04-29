@@ -23,4 +23,15 @@ export class ServicioDocumentoComunicadoService {
   listarVisiblesParaCliente(tramiteId: string): Observable<DocumentoComunicado[]> {
     return this.http.get<DocumentoComunicado[]>(`${this.urlBase}/tramite/${tramiteId}/visibles-cliente`);
   }
+
+  actualizarDocumentoComunicado(
+    id: string,
+    documentoComunicado: DocumentoComunicado
+  ): Observable<DocumentoComunicado> {
+    return this.http.put<DocumentoComunicado>(`${this.urlBase}/${id}`, documentoComunicado);
+  }
+
+  eliminarDocumentoComunicado(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.urlBase}/${id}`);
+  }
 }

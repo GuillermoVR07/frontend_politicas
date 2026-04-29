@@ -1,17 +1,25 @@
 <h1>Departamentos</h1>
 
 <div class="tarjeta">
-  <h2>Crear departamento</h2>
+  <h2>{{ modoEdicion ? 'Editar departamento' : 'Crear departamento' }}</h2>
 
   <label>Nombre</label>
-  <input [(ngModel)]="departamentoNuevo.nombre" placeholder="Escribe el nombre del departamento...">
+  <input title="nombre" [(ngModel)]="departamentoFormulario.nombre">
 
   <label>Descripción</label>
-  <textarea [(ngModel)]="departamentoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+  <textarea title="descripción" [(ngModel)]="departamentoFormulario.descripcion"></textarea>
 
-  <button (click)="crearDepartamento()">Crear departamento</button>
+  <div class="acciones">
+    <button (click)="guardarDepartamento()">
+      {{ modoEdicion ? 'Actualizar departamento' : 'Crear departamento' }}
+    </button>
 
-  <p>{{ mensaje }}</p>
+    <button type="button" (click)="limpiarFormulario()">Limpiar</button>
+
+    <button type="button" (click)="listarDepartamentos()">Recargar departamentos</button>
+  </div>
+
+  <p class="mensaje">{{ mensaje }}</p>
 </div>
 
 <table class="tabla-simple" *ngIf="departamentos.length > 0">
@@ -20,13 +28,19 @@
       <th>Identificador</th>
       <th>Nombre</th>
       <th>Descripción</th>
+      <th>Acciones</th>
     </tr>
   </thead>
+
   <tbody>
     <tr *ngFor="let departamento of departamentos">
       <td>{{ departamento.id }}</td>
       <td>{{ departamento.nombre }}</td>
       <td>{{ departamento.descripcion }}</td>
+      <td>
+        <button (click)="editarDepartamento(departamento)">Editar</button>
+        <button (click)="eliminarDepartamento(departamento)">Eliminar</button>
+      </td>
     </tr>
   </tbody>
 </table>

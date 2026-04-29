@@ -1,20 +1,23 @@
 <h1>Documentos y comunicados</h1>
 
 <div class="tarjeta">
-  <h2>Registrar documento o comunicado</h2>
+  <h2>{{ modoEdicion ? 'Editar documento o comunicado' : 'Registrar documento o comunicado' }}</h2>
 
   <p>
     Aquí se registra información asociada a un trámite. No se suben archivos desde
     la app móvil y no se descargan documentos desde Flutter.
   </p>
 
-  <label>Identificador del trámite</label>
-  <input
-    [(ngModel)]="documentoNuevo.tramiteId"
-    placeholder="Pegue aquí el ID del trámite">
+  <label>Trámite</label>
+  <select title="Trámite" [(ngModel)]="documentoNuevo.tramiteId">
+    <option value="">Seleccione un trámite</option>
+    <option *ngFor="let tramite of tramites" [value]="tramite.id">
+      {{ tramite.codigo }} - {{ tramite.titulo }}
+    </option>
+  </select>
 
   <label>Tipo</label>
-  <select title="Seleccione el tipo de documento o comunicado" [(ngModel)]="documentoNuevo.tipo">
+  <select title="Tipo" [(ngModel)]="documentoNuevo.tipo">
     <option *ngFor="let tipo of tipos" [value]="tipo">
       {{ tipo }}
     </option>
@@ -22,34 +25,55 @@
 
   <label>Nombre</label>
   <input
+    title="Nombre"
     [(ngModel)]="documentoNuevo.nombre"
     placeholder="Ejemplo: Comunicado de revisión">
 
   <label>Descripción</label>
   <textarea
+    title="Descripción"
     [(ngModel)]="documentoNuevo.descripcion"
     placeholder="Detalle visible o interno sobre el trámite">
   </textarea>
 
-  <label>Identificador del departamento</label>
-  <input
+  <label>Departamento</label>
+  <select title="Departamento"
     [(ngModel)]="documentoNuevo.departamentoId"
-    placeholder="Ejemplo: DEP_LEGAL">
+    (change)="alSeleccionarDepartamento()">
+    <option value="">Seleccione un departamento</option>
+    <option *ngFor="let departamento of departamentos" [value]="departamento.id">
+      {{ departamento.nombre }}
+    </option>
+  </select>
 
   <label>Nombre del departamento</label>
-  <input
-    [(ngModel)]="documentoNuevo.nombreDepartamento"
-    placeholder="Ejemplo: Legal">
+  <input title="Nombre del departamento" [(ngModel)]="documentoNuevo.nombreDepartamento" readonly>
 
   <label class="opcion-visible">
-    <input type="checkbox" [(ngModel)]="documentoNuevo.visibleParaCliente">
+    <input type="checkbox" title="Visible para cliente" [(ngModel)]="documentoNuevo.visibleParaCliente">
     Visible para cliente
   </label>
 
   <div class="acciones">
-    <button (click)="crearDocumentoComunicado()">Guardar</button>
-    <button (click)="usarTramiteDelFormulario()">Ver elementos del trámite</button>
-    <button (click)="limpiarFormulario()">Limpiar</button>
+    <button type="button" (click)="guardarDocumentoComunicado()">
+      {{ modoEdicion ? 'Actualizar' : 'Guardar' }}
+    </button>
+
+    <button type="button" (click)="usarTramiteDelFormulario()">
+      Ver elementos del trámite
+    </button>
+
+    <button type="button" (click)="limpiarFormulario()">
+      Limpiar
+    </button>
+
+    <button type="button" (click)="listarTramites()">
+      Recargar trámites
+    </button>
+
+    <button type="button" (click)="listarDepartamentos()">
+      Recargar departamentos
+    </button>
   </div>
 
   <p class="mensaje">{{ mensaje }}</p>
@@ -58,17 +82,20 @@
 <div class="tarjeta">
   <h2>Consultar documentos y comunicados por trámite</h2>
 
-  <label>Identificador del trámite</label>
-  <input
-    [(ngModel)]="tramiteIdConsulta"
-    placeholder="Pegue aquí el ID del trámite">
+  <label>Trámite</label>
+  <select title="Trámite" [(ngModel)]="tramiteIdConsulta">
+    <option value="">Seleccione un trámite</option>
+    <option *ngFor="let tramite of tramites" [value]="tramite.id">
+      {{ tramite.codigo }} - {{ tramite.titulo }}
+    </option>
+  </select>
 
   <label class="opcion-visible">
-    <input type="checkbox" [(ngModel)]="soloVisiblesParaCliente">
+    <input type="checkbox" title="Mostrar solo visibles para cliente" [(ngModel)]="soloVisiblesParaCliente">
     Mostrar solo visibles para cliente
   </label>
 
-  <button (click)="buscarPorTramite()">Buscar</button>
+  <button type="button" (click)="buscarPorTramite()">Buscar</button>
 </div>
 
 <div class="tarjeta" *ngIf="documentosComunicados.length === 0">
@@ -84,6 +111,7 @@
       <th>Departamento</th>
       <th>Visible para cliente</th>
       <th>Fecha</th>
+      <th>Acciones</th>
     </tr>
   </thead>
 
@@ -95,6 +123,15 @@
       <td>{{ item.nombreDepartamento }}</td>
       <td>{{ item.visibleParaCliente ? 'Sí' : 'No' }}</td>
       <td>{{ item.fechaRegistro }}</td>
+      <td>
+        <button type="button" (click)="editarDocumentoComunicado(item)">
+          Editar
+        </button>
+
+        <button type="button" (click)="eliminarDocumentoComunicado(item)">
+          Eliminar
+        </button>
+      </td>
     </tr>
   </tbody>
 </table>

@@ -60,4 +60,12 @@ export class ServicioTramiteService {
       visibleParaCliente
     });
   }
+
+  actualizarTramite(id: string, solicitud: any): Observable<Tramite> {
+    return this.http.put<Tramite>(`${this.urlBase}/${id}`, solicitud);
+  }
+
+  eliminarTramite(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.urlBase}/${id}`);
+  }
 }

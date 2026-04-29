@@ -3,6 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
 import { Tramite } from '../../compartido/modelos/tramite.modelo';
 import { EstadoTramite } from '../../compartido/modelos/estado-tramite.modelo';
+import { Proceso } from '../../compartido/modelos/proceso.modelo';
+import { Departamento } from '../../compartido/modelos/departamento.modelo';
+import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
+import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
 
 @Component({
   selector: 'app-tramites',
@@ -36,10 +40,20 @@ export class TramitesComponent implements OnInit {
 
   mensaje = '';
 
-  constructor(private servicioTramite: ServicioTramiteService) {}
+  constructor(
+    private servicioTramite: ServicioTramiteService,
+    private servicioProceso: ServicioProcesoService,
+    private servicioDepartamento: ServicioDepartamentoService
+  ) {}
+
+  procesos: Proceso[] = [];
+  departamentos: Departamento[] = [];
+  modoEdicion = false;
 
   ngOnInit(): void {
     this.listarTramites();
+    this.listarProcesos();
+    this.listarDepartamentos();
   }
 
   listarTramites(): void {
@@ -170,5 +184,119 @@ export class TramitesComponent implements OnInit {
         this.mensaje = 'No se pudo cambiar el departamento.';
       }
     });
+  }
+
+
+  listarProcesos(): void {
+    this.servicioProceso.listarProcesos().subscribe({
+      next: respuesta => this.procesos = respuesta,
+      error: () => this.mensaje = 'No se pudieron cargar los procesos.'
+    });
+  }
+
+  listarDepartamentos(): void {
+    this.servicioDepartamento.listarDepartamentos().subscribe({
+      next: respuesta => this.departamentos = respuesta,
+      error: () => this.mensaje = 'No se pudieron cargar los departamentos.'
+    });
+  }
+
+  alSeleccionarDepartamentoInicial(): void {
+    const departamento = this.departamentos.find(
+      item => item.id === this.tramiteNuevo.departamentoInicialId
+    );
+
+    if (departamento) {
+      this.tramiteNuevo.nombreDepartamentoInicial = departamento.nombre;
+    }
+  }
+
+  editarTramite(tramite: Tramite): void {
+    this.modoEdicion = true;
+    this.tramiteSeleccionado = tramite;
+    this.tramiteSeleccionadoId = tramite.id || '';
+
+    this.tramiteNuevo = {
+      codigo: tramite.codigo,
+      titulo: tramite.titulo,
+      descripcion: tramite.descripcion,
+      identificacionCiudadano: tramite.identificacionCiudadano,
+      procesoId: tramite.procesoId,
+      departamentoInicialId: tramite.departamentoActualId,
+      nombreDepartamentoInicial: tramite.nombreDepartamentoActual
+    };
+
+    this.mensaje = 'Editando trámite seleccionado.';
+  }
+
+  guardarTramite(): void {
+    if (this.modoEdicion && this.tramiteSeleccionadoId) {
+      this.servicioTramite.actualizarTramite(this.tramiteSeleccionadoId, {
+        codigo: this.tramiteNuevo.codigo,
+        titulo: this.tramiteNuevo.titulo,
+        descripcion: this.tramiteNuevo.descripcion,
+        identificacionCiudadano: this.tramiteNuevo.identificacionCiudadano,
+        procesoId: this.tramiteNuevo.procesoId
+      }).subscribe({
+        next: tramiteActualizado => {
+          this.mensaje = 'Trámite actualizado correctamente.';
+          this.tramiteSeleccionado = tramiteActualizado;
+          this.limpiarFormularioTramite();
+          this.listarTramites();
+        },
+        error: () => this.mensaje = 'No se pudo actualizar el trámite.'
+      });
+
+      return;
+    }
+
+    this.crearTramite();
+  }
+
+  eliminarTramite(tramite: Tramite): void {
+    if (!tramite.id) {
+      return;
+    }
+
+    const confirmar = confirm(`¿Seguro que desea eliminar el trámite "${tramite.codigo}"?`);
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.servicioTramite.eliminarTramite(tramite.id).subscribe({
+      next: () => {
+        this.mensaje = 'Trámite eliminado correctamente.';
+        this.tramiteSeleccionado = undefined;
+        this.listarTramites();
+      },
+      error: () => this.mensaje = 'No se pudo eliminar el trámite.'
+    });
+  }
+
+  limpiarFormularioTramite(): void {
+    this.tramiteNuevo = {
+      codigo: '',
+      titulo: '',
+      descripcion: '',
+      identificacionCiudadano: '',
+      procesoId: '',
+      departamentoInicialId: '',
+      nombreDepartamentoInicial: ''
+    };
+
+    this.tramiteSeleccionadoId = '';
+    this.modoEdicion = false;
+  }
+
+
+  alSeleccionarNuevoDepartamento(): void {
+    const departamento = this.departamentos.find(
+      item => item.id === this.nuevoDepartamentoId
+    );
+
+    if (departamento) {
+      this.nombreNuevoDepartamento = departamento.nombre;
+    }
   }
 }

@@ -1,20 +1,35 @@
 <h1>Procesos o políticas de negocio</h1>
 
 <div class="tarjeta">
-  <h2>Crear proceso</h2>
+  <h2>{{ modoEdicion ? 'Editar proceso' : 'Crear proceso' }}</h2>
 
   <label>Nombre</label>
-  <input [(ngModel)]="procesoNuevo.nombre" placeholder="Escribe el nombre del proceso...">
+  <input title="Nombre" [(ngModel)]="procesoFormulario.nombre">
 
   <label>Descripción</label>
-  <textarea [(ngModel)]="procesoNuevo.descripcion" placeholder="Escribe una descripción..."></textarea>
+  <textarea title="Descripción" [(ngModel)]="procesoFormulario.descripcion"></textarea>
 
   <label>Departamentos separados por coma</label>
-  <input [(ngModel)]="departamentosTexto" placeholder="Atención al cliente, Evaluación, Legal, Almacén">
+  <input
+    title="Departamentos"
+    [(ngModel)]="departamentosTexto"
+    placeholder="Atención al cliente, Evaluación, Legal, Almacén">
 
-  <button (click)="crearProceso()">Crear proceso</button>
+  <div class="acciones">
+    <button (click)="guardarProceso()">
+      {{ modoEdicion ? 'Actualizar proceso' : 'Crear proceso' }}
+    </button>
 
-  <p>{{ mensaje }}</p>
+    <button type="button" (click)="limpiarFormulario()">
+      Limpiar
+    </button>
+
+    <button type="button" (click)="listarProcesos()">
+      Recargar procesos
+    </button>
+  </div>
+
+  <p class="mensaje">{{ mensaje }}</p>
 </div>
 
 <table class="tabla-simple" *ngIf="procesos.length > 0">
@@ -24,14 +39,20 @@
       <th>Nombre</th>
       <th>Descripción</th>
       <th>Departamentos</th>
+      <th>Acciones</th>
     </tr>
   </thead>
+
   <tbody>
     <tr *ngFor="let proceso of procesos">
       <td>{{ proceso.id }}</td>
       <td>{{ proceso.nombre }}</td>
       <td>{{ proceso.descripcion }}</td>
       <td>{{ proceso.departamentos.join(', ') }}</td>
+      <td>
+        <button (click)="editarProceso(proceso)">Editar</button>
+        <button (click)="eliminarProceso(proceso)">Eliminar</button>
+      </td>
     </tr>
   </tbody>
 </table>

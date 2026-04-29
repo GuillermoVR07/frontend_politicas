@@ -8,6 +8,7 @@ import {
 
 import { ServicioIaService } from '../../compartido/servicios/servicio-ia.service';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
+import { Proceso } from '../../compartido/modelos/proceso.modelo';
 
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 
@@ -24,8 +25,9 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   @ViewChild('contenedorDiagrama', { static: true })
   contenedorDiagrama!: ElementRef;
 
-  procesoId = '';
+  procesos: Proceso[] = [];
 
+  procesoId = '';
   descripcionProceso = '';
   respuestaIa: any;
   mensaje = '';
@@ -42,12 +44,24 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.inicializarModelador();
+    this.listarProcesos();
   }
 
   ngOnDestroy(): void {
     if (this.modeladorBpmn) {
       this.modeladorBpmn.destroy();
     }
+  }
+
+  listarProcesos(): void {
+    this.servicioProceso.listarProcesos().subscribe({
+      next: respuesta => {
+        this.procesos = respuesta;
+      },
+      error: () => {
+        this.mensaje = 'No se pudieron cargar los procesos.';
+      }
+    });
   }
 
   inicializarModelador(): void {
@@ -155,7 +169,7 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
 
   guardarDiagramaEnProceso(): void {
     if (!this.procesoId.trim()) {
-      this.mensaje = 'Debe ingresar el identificador del proceso.';
+      this.mensaje = 'Debe seleccionar un proceso.';
       return;
     }
 
@@ -190,7 +204,7 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
 
   cargarDiagramaDesdeProceso(): void {
     if (!this.procesoId.trim()) {
-      this.mensaje = 'Debe ingresar el identificador del proceso.';
+      this.mensaje = 'Debe seleccionar un proceso.';
       return;
     }
 
@@ -266,11 +280,9 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
       </bpmn:endEvent>
     `;
 
-    if (actividades.length > 0) {
-      elementosProceso += `
-        <bpmn:sequenceFlow id="Flujo_Inicio" sourceRef="${inicioId}" targetRef="${this.limpiarIdBpmn(actividades[0].id)}" />
-      `;
-    }
+    elementosProceso += `
+      <bpmn:sequenceFlow id="Flujo_Inicio" sourceRef="${inicioId}" targetRef="${this.limpiarIdBpmn(actividades[0].id)}" />
+    `;
 
     conexiones.forEach((conexion: any) => {
       const origen = this.limpiarIdBpmn(conexion.origen);

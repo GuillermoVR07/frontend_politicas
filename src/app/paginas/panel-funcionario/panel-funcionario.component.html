@@ -3,10 +3,23 @@
 <div class="tarjeta">
   <h2>Buscar trámites por departamento</h2>
 
-  <label>Identificador del departamento</label>
-  <input [(ngModel)]="departamentoId" placeholder="Ejemplo: DEP_ATENCION">
+  <label>Departamento</label>
+  <select title="Departamento" [(ngModel)]="departamentoId">
+    <option value="">Seleccione un departamento</option>
+    <option *ngFor="let departamento of departamentos" [value]="departamento.id">
+      {{ departamento.nombre }}
+    </option>
+  </select>
 
-  <button (click)="buscarTramitesPorDepartamento()">Buscar trámites</button>
+  <div class="acciones">
+    <button type="button" (click)="buscarTramitesPorDepartamento()">
+      Buscar trámites
+    </button>
+
+    <button type="button" (click)="listarDepartamentos()">
+      Recargar departamentos
+    </button>
+  </div>
 
   <p class="mensaje">{{ mensaje }}</p>
 </div>
@@ -36,7 +49,9 @@
         <td>{{ tramite.estadoActual }}</td>
         <td>{{ tramite.nombreDepartamentoActual }}</td>
         <td>
-          <button (click)="seleccionarTramite(tramite)">Atender</button>
+          <button type="button" (click)="seleccionarTramite(tramite)">
+            Atender
+          </button>
         </td>
       </tr>
     </tbody>
@@ -59,7 +74,7 @@
   <h2>Actualizar trámite</h2>
 
   <label>Nuevo estado</label>
-  <select title="Seleccione el nuevo estado" [(ngModel)]="nuevoEstado">
+  <select title="Nuevo estado" [(ngModel)]="nuevoEstado">
     <option *ngFor="let estado of estados" [value]="estado">
       {{ estado }}
     </option>
@@ -67,7 +82,7 @@
 
   <label>Observación</label>
   <textarea
-    title="Escriba una observación simple sobre el avance del trámite"
+    title="Observación"
     [(ngModel)]="observacion"
     placeholder="Escriba una observación simple sobre el avance del trámite">
   </textarea>
@@ -78,23 +93,37 @@
   </label>
 
   <div class="acciones">
-    <button (click)="cambiarEstado()">Cambiar estado</button>
+    <button type="button" (click)="cambiarEstado()">
+      Cambiar estado
+    </button>
   </div>
 
   <hr>
 
-  <label>Nuevo identificador de departamento</label>
-  <input [(ngModel)]="nuevoDepartamentoId" placeholder="Ejemplo: DEP_LEGAL">
+  <label>Nuevo departamento</label>
+  <select title="Nuevo departamento"
+    [(ngModel)]="nuevoDepartamentoId"
+    (change)="alSeleccionarNuevoDepartamento()">
+    <option value="">Seleccione un departamento</option>
+    <option *ngFor="let departamento of departamentos" [value]="departamento.id">
+      {{ departamento.nombre }}
+    </option>
+  </select>
 
   <label>Nombre del nuevo departamento</label>
-  <input [(ngModel)]="nombreNuevoDepartamento" placeholder="Ejemplo: Legal">
+  <input title="Nombre del nuevo departamento" [(ngModel)]="nombreNuevoDepartamento" readonly>
 
   <div class="acciones">
-    <button (click)="cambiarDepartamento()">Derivar a otro departamento</button>
+    <button type="button" (click)="cambiarDepartamento()">
+      Derivar a otro departamento
+    </button>
   </div>
 </div>
 
-<div class="tarjeta" *ngIf="tramiteSeleccionado && tramiteSeleccionado.seguimientos.length > 0">
+<div
+  class="tarjeta"
+  *ngIf="tramiteSeleccionado && tramiteSeleccionado.seguimientos.length > 0">
+
   <h2>Seguimiento del trámite</h2>
 
   <table class="tabla-simple">

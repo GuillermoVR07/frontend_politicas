@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Proceso } from '../../compartido/modelos/proceso.modelo';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
-import { FormsModule} from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 @Component({
   selector: 'app-procesos',
   standalone: false,
@@ -13,13 +12,15 @@ export class ProcesosComponent implements OnInit {
 
   procesos: Proceso[] = [];
 
-  procesoNuevo: Proceso = {
+  procesoFormulario: Proceso = {
     nombre: '',
     descripcion: '',
     departamentos: []
   };
 
   departamentosTexto = '';
+  procesoEditandoId = '';
+  modoEdicion = false;
   mensaje = '';
 
   constructor(private servicioProceso: ServicioProcesoService) {}
@@ -35,20 +36,82 @@ export class ProcesosComponent implements OnInit {
     });
   }
 
-  crearProceso(): void {
-    this.procesoNuevo.departamentos = this.departamentosTexto
+  guardarProceso(): void {
+    this.procesoFormulario.departamentos = this.departamentosTexto
       .split(',')
       .map(valor => valor.trim())
       .filter(valor => valor.length > 0);
 
-    this.servicioProceso.crearProceso(this.procesoNuevo).subscribe({
+    if (this.modoEdicion && this.procesoEditandoId) {
+      this.servicioProceso.actualizarProceso(
+        this.procesoEditandoId,
+        this.procesoFormulario
+      ).subscribe({
+        next: () => {
+          this.mensaje = 'Proceso actualizado correctamente.';
+          this.limpiarFormulario();
+          this.listarProcesos();
+        },
+        error: () => this.mensaje = 'No se pudo actualizar el proceso.'
+      });
+
+      return;
+    }
+
+    this.servicioProceso.crearProceso(this.procesoFormulario).subscribe({
       next: () => {
         this.mensaje = 'Proceso creado correctamente.';
-        this.procesoNuevo = { nombre: '', descripcion: '', departamentos: [] };
-        this.departamentosTexto = '';
+        this.limpiarFormulario();
         this.listarProcesos();
       },
       error: () => this.mensaje = 'No se pudo crear el proceso.'
     });
+  }
+
+  editarProceso(proceso: Proceso): void {
+    this.modoEdicion = true;
+    this.procesoEditandoId = proceso.id || '';
+
+    this.procesoFormulario = {
+      nombre: proceso.nombre,
+      descripcion: proceso.descripcion,
+      departamentos: [...proceso.departamentos],
+      diagrama: proceso.diagrama
+    };
+
+    this.departamentosTexto = proceso.departamentos.join(', ');
+    this.mensaje = 'Editando proceso seleccionado.';
+  }
+
+  eliminarProceso(proceso: Proceso): void {
+    if (!proceso.id) {
+      return;
+    }
+
+    const confirmar = confirm(`¿Seguro que desea eliminar el proceso "${proceso.nombre}"?`);
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.servicioProceso.eliminarProceso(proceso.id).subscribe({
+      next: () => {
+        this.mensaje = 'Proceso eliminado correctamente.';
+        this.listarProcesos();
+      },
+      error: () => this.mensaje = 'No se pudo eliminar el proceso.'
+    });
+  }
+
+  limpiarFormulario(): void {
+    this.procesoFormulario = {
+      nombre: '',
+      descripcion: '',
+      departamentos: []
+    };
+
+    this.departamentosTexto = '';
+    this.procesoEditandoId = '';
+    this.modoEdicion = false;
   }
 }

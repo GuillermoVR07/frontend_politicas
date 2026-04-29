@@ -40,5 +40,9 @@ export class ServicioProcesoService {
       generadoPorIa
     });
   }
+
+  eliminarProceso(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.urlBase}/${id}`);
+  }
   
 }
