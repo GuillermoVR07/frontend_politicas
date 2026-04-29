@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, timeout } from 'rxjs';
 
 import {
   DocumentoComunicado,
@@ -53,7 +53,8 @@ export class DocumentosComunicadosComponent implements OnInit, OnDestroy {
     private servicioDocumentoComunicado: ServicioDocumentoComunicadoService,
     private servicioTramite: ServicioTramiteService,
     private servicioDepartamento: ServicioDepartamentoService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -86,25 +87,33 @@ export class DocumentosComunicadosComponent implements OnInit, OnDestroy {
   }
 
   listarTramites(): void {
-    this.servicioTramite.listarTramites().subscribe({
+    this.servicioTramite.listarTramites().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.tramites = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los trámites.';
+        this.actualizarVista();
       }
     });
   }
 
   listarDepartamentos(): void {
-    this.servicioDepartamento.listarDepartamentos().subscribe({
+    this.servicioDepartamento.listarDepartamentos().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.departamentos = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los departamentos.';
+        this.actualizarVista();
       }
     });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   alSeleccionarDepartamento(): void {

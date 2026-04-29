@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, finalize, timeout } from 'rxjs';
 
 import { Departamento } from '../../compartido/modelos/departamento.modelo';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
@@ -29,7 +29,8 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
 
   constructor(
     private servicioDepartamento: ServicioDepartamentoService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -51,24 +52,36 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.mensaje = 'Cargando departamentos...';
 
-    this.servicioDepartamento.listarDepartamentos().subscribe({
-      next: respuesta => {
-        this.departamentos = respuesta;
-        this.cargando = false;
-        this.mensaje = respuesta.length === 0
-          ? 'No hay departamentos registrados.'
-          : 'Departamentos cargados correctamente.';
-      },
-      error: () => {
-        this.cargando = false;
-        this.mensaje = 'No se pudieron cargar los departamentos.';
-      }
-    });
+    this.servicioDepartamento.listarDepartamentos()
+      .pipe(
+        timeout(8000),
+        finalize(() => {
+          this.cargando = false;
+          this.actualizarVista();
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          this.departamentos = respuesta;
+          this.mensaje = respuesta.length === 0
+            ? 'No hay departamentos registrados.'
+            : 'Departamentos cargados correctamente.';
+        },
+        error: () => {
+          this.departamentos = [];
+          this.mensaje = 'No se pudieron cargar los departamentos.';
+        }
+      });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   guardarDepartamento(): void {
     if (!this.departamentoFormulario.nombre.trim()) {
       this.mensaje = 'Debe ingresar el nombre del departamento.';
+      this.actualizarVista();
       return;
     }
 
@@ -83,9 +96,11 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
           this.listarDepartamentos();
           this.servicioActualizacion.notificarActualizacion('departamentos');
           this.servicioActualizacion.notificarActualizacion('tramites');
+          this.actualizarVista();
         },
         error: () => {
           this.mensaje = 'No se pudo actualizar el departamento.';
+          this.actualizarVista();
         }
       });
 
@@ -99,9 +114,11 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
         this.listarDepartamentos();
         this.servicioActualizacion.notificarActualizacion('departamentos');
         this.servicioActualizacion.notificarActualizacion('tramites');
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudo crear el departamento.';
+        this.actualizarVista();
       }
     });
   }
@@ -116,6 +133,7 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
     };
 
     this.mensaje = 'Editando departamento seleccionado.';
+    this.actualizarVista();
   }
 
   eliminarDepartamento(departamento: Departamento): void {
@@ -138,9 +156,11 @@ export class DepartamentosComponent implements OnInit, OnDestroy {
         this.listarDepartamentos();
         this.servicioActualizacion.notificarActualizacion('departamentos');
         this.servicioActualizacion.notificarActualizacion('tramites');
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudo eliminar el departamento.';
+        this.actualizarVista();
       }
     });
   }

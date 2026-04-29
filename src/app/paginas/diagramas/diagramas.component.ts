@@ -1,12 +1,16 @@
 import {
   AfterViewInit,
+  ChangeDetectorRef,
   Component,
   ElementRef,
+  Inject,
   OnDestroy,
+  PLATFORM_ID,
   ViewChild
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
-import { Subscription } from 'rxjs';
+import { Subscription, timeout } from 'rxjs';
 
 import { ServicioIaService } from '../../compartido/servicios/servicio-ia.service';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
@@ -38,6 +42,7 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
 
   escuchandoVoz = false;
   xmlActual = '';
+  private esNavegador = false;
 
   private modeladorBpmn: any;
   private suscripcionActualizacion?: Subscription;
@@ -45,11 +50,18 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   constructor(
     private servicioIa: ServicioIaService,
     private servicioProceso: ServicioProcesoService,
-    private servicioActualizacion: ServicioActualizacionService
-  ) {}
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private plataformaId: object
+  ) {
+    this.esNavegador = isPlatformBrowser(this.plataformaId);
+  }
 
   ngAfterViewInit(): void {
-    this.inicializarModelador();
+    if (this.esNavegador) {
+      this.inicializarModelador();
+    }
+
     this.listarProcesos();
 
     this.suscripcionActualizacion = this.servicioActualizacion.actualizacion$
@@ -69,14 +81,20 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   }
 
   listarProcesos(): void {
-    this.servicioProceso.listarProcesos().subscribe({
+    this.servicioProceso.listarProcesos().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.procesos = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los procesos.';
+        this.actualizarVista();
       }
     });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   inicializarModelador(): void {
@@ -96,9 +114,11 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
     this.modeladorBpmn.importXML(this.obtenerXmlBase())
       .then(() => {
         this.mensaje = 'Diagrama base cargado correctamente.';
+        this.actualizarVista();
       })
       .catch(() => {
         this.mensaje = 'No se pudo cargar el diagrama base.';
+        this.actualizarVista();
       });
   }
 
@@ -135,6 +155,10 @@ export class DiagramasComponent implements AfterViewInit, OnDestroy {
   }
 
   iniciarReconocimientoVoz(): void {
+    if (!this.esNavegador) {
+      return;
+    }
+
     const ReconocimientoVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!ReconocimientoVoz) {

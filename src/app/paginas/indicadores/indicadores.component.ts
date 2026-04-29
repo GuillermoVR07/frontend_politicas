@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription, finalize, timeout } from 'rxjs';
 
 import { ServicioIndicadorService } from '../../compartido/servicios/servicio-indicador.service';
@@ -27,7 +27,8 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
 
   constructor(
     private servicioIndicador: ServicioIndicadorService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +64,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
         timeout(8000),
         finalize(() => {
           this.cargando = false;
+          this.actualizarVista();
         })
       )
       .subscribe({
@@ -94,6 +96,7 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
         timeout(8000),
         finalize(() => {
           this.cargandoCuelloBotella = false;
+          this.actualizarVista();
         })
       )
       .subscribe({
@@ -106,5 +109,9 @@ export class IndicadoresComponent implements OnInit, OnDestroy {
           this.mensaje = 'No se pudo verificar el cuello de botella.';
         }
       });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 }

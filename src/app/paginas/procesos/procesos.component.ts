@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, finalize, timeout } from 'rxjs';
 
 import { Proceso } from '../../compartido/modelos/proceso.modelo';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
@@ -31,7 +31,8 @@ export class ProcesosComponent implements OnInit, OnDestroy {
 
   constructor(
     private servicioProceso: ServicioProcesoService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -53,24 +54,36 @@ export class ProcesosComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.mensaje = 'Cargando procesos...';
 
-    this.servicioProceso.listarProcesos().subscribe({
-      next: respuesta => {
-        this.procesos = respuesta;
-        this.cargando = false;
-        this.mensaje = respuesta.length === 0
-          ? 'No hay procesos registrados.'
-          : 'Procesos cargados correctamente.';
-      },
-      error: () => {
-        this.cargando = false;
-        this.mensaje = 'No se pudieron cargar los procesos.';
-      }
-    });
+    this.servicioProceso.listarProcesos()
+      .pipe(
+        timeout(8000),
+        finalize(() => {
+          this.cargando = false;
+          this.actualizarVista();
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          this.procesos = respuesta;
+          this.mensaje = respuesta.length === 0
+            ? 'No hay procesos registrados.'
+            : 'Procesos cargados correctamente.';
+        },
+        error: () => {
+          this.procesos = [];
+          this.mensaje = 'No se pudieron cargar los procesos.';
+        }
+      });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   guardarProceso(): void {
     if (!this.procesoFormulario.nombre.trim()) {
       this.mensaje = 'Debe ingresar el nombre del proceso.';
+      this.actualizarVista();
       return;
     }
 
@@ -91,9 +104,11 @@ export class ProcesosComponent implements OnInit, OnDestroy {
           this.servicioActualizacion.notificarActualizacion('procesos');
           this.servicioActualizacion.notificarActualizacion('tramites');
           this.servicioActualizacion.notificarActualizacion('diagramas');
+          this.actualizarVista();
         },
         error: () => {
           this.mensaje = 'No se pudo actualizar el proceso.';
+          this.actualizarVista();
         }
       });
 
@@ -108,9 +123,11 @@ export class ProcesosComponent implements OnInit, OnDestroy {
         this.servicioActualizacion.notificarActualizacion('procesos');
         this.servicioActualizacion.notificarActualizacion('tramites');
         this.servicioActualizacion.notificarActualizacion('diagramas');
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudo crear el proceso.';
+        this.actualizarVista();
       }
     });
   }
@@ -128,6 +145,7 @@ export class ProcesosComponent implements OnInit, OnDestroy {
 
     this.departamentosTexto = proceso.departamentos.join(', ');
     this.mensaje = 'Editando proceso seleccionado.';
+    this.actualizarVista();
   }
 
   eliminarProceso(proceso: Proceso): void {
@@ -149,9 +167,11 @@ export class ProcesosComponent implements OnInit, OnDestroy {
         this.servicioActualizacion.notificarActualizacion('procesos');
         this.servicioActualizacion.notificarActualizacion('tramites');
         this.servicioActualizacion.notificarActualizacion('diagramas');
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudo eliminar el proceso.';
+        this.actualizarVista();
       }
     });
   }

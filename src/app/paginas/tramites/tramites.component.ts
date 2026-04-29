@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, timeout } from 'rxjs';
 
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
 import { ServicioProcesoService } from '../../compartido/servicios/servicio-proceso.service';
@@ -54,7 +54,8 @@ export class TramitesComponent implements OnInit, OnDestroy {
     private servicioTramite: ServicioTramiteService,
     private servicioProceso: ServicioProcesoService,
     private servicioDepartamento: ServicioDepartamentoService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -86,38 +87,48 @@ export class TramitesComponent implements OnInit, OnDestroy {
   listarTramites(): void {
     this.cargando = true;
 
-    this.servicioTramite.listarTramites().subscribe({
+    this.servicioTramite.listarTramites().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.tramites = respuesta;
         this.cargando = false;
+        this.actualizarVista();
       },
       error: () => {
         this.cargando = false;
         this.mensaje = 'No se pudieron cargar los trámites.';
+        this.actualizarVista();
       }
     });
   }
 
   listarProcesos(): void {
-    this.servicioProceso.listarProcesos().subscribe({
+    this.servicioProceso.listarProcesos().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.procesos = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los procesos.';
+        this.actualizarVista();
       }
     });
   }
 
   listarDepartamentos(): void {
-    this.servicioDepartamento.listarDepartamentos().subscribe({
+    this.servicioDepartamento.listarDepartamentos().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.departamentos = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los departamentos.';
+        this.actualizarVista();
       }
     });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   alSeleccionarDepartamentoInicial(): void {

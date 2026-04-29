@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription, finalize, timeout } from 'rxjs';
 
 import { ServicioIndicadorService } from '../../compartido/servicios/servicio-indicador.service';
@@ -23,7 +23,8 @@ export class PanelAdministradorComponent implements OnInit, OnDestroy {
 
   constructor(
     private servicioIndicador: ServicioIndicadorService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -55,6 +56,7 @@ export class PanelAdministradorComponent implements OnInit, OnDestroy {
         timeout(8000),
         finalize(() => {
           this.cargando = false;
+          this.actualizarVista();
         })
       )
       .subscribe({
@@ -70,5 +72,9 @@ export class PanelAdministradorComponent implements OnInit, OnDestroy {
           this.mensaje = 'No se pudieron cargar los KPIs. Verifique conexión con el backend o CORS.';
         }
       });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 }

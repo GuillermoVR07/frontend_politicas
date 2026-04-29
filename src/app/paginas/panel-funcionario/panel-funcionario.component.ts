@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription, timeout } from 'rxjs';
 
 import { ServicioTramiteService } from '../../compartido/servicios/servicio-tramite.service';
 import { ServicioDepartamentoService } from '../../compartido/servicios/servicio-departamento.service';
@@ -38,7 +38,8 @@ export class PanelFuncionarioComponent implements OnInit, OnDestroy {
   constructor(
     private servicioTramite: ServicioTramiteService,
     private servicioDepartamento: ServicioDepartamentoService,
-    private servicioActualizacion: ServicioActualizacionService
+    private servicioActualizacion: ServicioActualizacionService,
+    private detectorCambios: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -61,12 +62,14 @@ export class PanelFuncionarioComponent implements OnInit, OnDestroy {
   }
 
   listarDepartamentos(): void {
-    this.servicioDepartamento.listarDepartamentos().subscribe({
+    this.servicioDepartamento.listarDepartamentos().pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.departamentos = respuesta;
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los departamentos.';
+        this.actualizarVista();
       }
     });
   }
@@ -77,16 +80,22 @@ export class PanelFuncionarioComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.servicioTramite.buscarPorDepartamento(this.departamentoId).subscribe({
+    this.servicioTramite.buscarPorDepartamento(this.departamentoId).pipe(timeout(8000)).subscribe({
       next: respuesta => {
         this.tramites = respuesta;
         this.tramiteSeleccionado = undefined;
         this.mensaje = '';
+        this.actualizarVista();
       },
       error: () => {
         this.mensaje = 'No se pudieron cargar los trámites del departamento.';
+        this.actualizarVista();
       }
     });
+  }
+
+  private actualizarVista(): void {
+    this.detectorCambios.detectChanges();
   }
 
   seleccionarTramite(tramite: Tramite): void {
